@@ -1,0 +1,125 @@
+# Treasure War
+
+Inspired by [brains](https://github.com/chrislloyd/brains) - write a bot that finds treasure, kills people and claims glory.
+
+## Game rules
+
+1.   You spawn at your stash.
+2.   You can navigate and pick up treasure which you can return to your stash for 10 points.
+3.   Players can steal treasure from your stash and you lose 10 points.
+4.   You earn 1 point for each player you kill.
+5.   When you're carrying treasure you can't attack.
+6.   You can see one tile in every direction and can move/attack to anywhere you can see.
+7.   You can make an action (attack/move/pick up treasure/drop treasure) at most once per 2 seconds. Last command wins and invalid moves will be discarded.
+
+## About
+
+Treasure War runs over websockets,
+
+## Messages
+
+### The Server
+
+The server generates a tile based dungeon of size (errm)
+
+The server "ticks" every two seconds in which you may make a move.  When the server ticks it runs the following logic
+
+*   Evaluate any attacks
+*   Kill any players that are dead
+*   Process any moves/treasure pickups
+*   Respawn any dead players at their stash
+*   Send tick results
+
+On connect/tick:
+
+```json
+{
+  you: {
+    name: 'unnamed coward',
+    health: 100,
+    score: 0,
+    carrying_treasure: false,
+    stash_location: {
+      x: int,
+      y: int
+    }
+    position: {
+      x: int,
+      y: int
+    }
+  }
+  vision: {
+    n: [],
+    ne: ["wall"],
+    e: ["wall"],
+    se: ["wall"],
+    s: ["treasure"],
+    sw: [player: {
+      name: "@mtcmorris",
+      health: 55,
+      score: 4
+    }],
+    w: [stash: {
+      name: "@nullobject",
+      contents: {
+        treasure: int
+      }
+    }],
+    nw: []
+  }
+}
+```
+
+### Your messages
+
+You may send the server one message in every tick interval. The server will accept the last message you send it if you send multiple messages.  Each move must specify a direction
+
+You can perform any of the following actions:
+
+*  Attack
+*  Pick up treasure
+*  Drop treasure
+*  Move
+
+#### Attack
+
+*You cannot attack when you are carrying treasure*
+
+```json
+{
+  command: "attack",
+  direction: "n"
+}
+
+```
+
+#### Pick up treasure
+
+*You cannot pick up treasure if you're already carrying treasure*
+
+```json
+{
+  command: "acquire",
+  direction: "n"
+}
+```
+
+#### Move
+
+```json
+{
+  command: "move",
+  direction: "n"
+}
+```
+
+#### Drop treasure
+
+*You cannot drop treasure if you're not carrying treasure*
+
+```json
+{
+  command: "drop",
+  direction: "n"
+}
+```
