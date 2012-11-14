@@ -20,7 +20,7 @@ Treasure War runs over websockets,
 
 ### The Server
 
-The server generates a tile based dungeon of size (errm)
+The server generates a tile based dungeon of configurable size
 
 The server "ticks" every two seconds in which you may make a move.  When the server ticks it runs the following logic
 

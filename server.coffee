@@ -22,8 +22,6 @@ setInterval tickGame, 2000
 io.sockets.on('connection', (socket) ->
   console.log "Spawning player for #{socket.id}"
   game.spawnPlayer(socket.id)
-  socket.emit('news', { hello: 'world' })
-  socket.emit('message', "Sup foo")
 
   socket.on("set name", (player_name) ->
     console.log "set name: #{socket.id} #{player_name}"

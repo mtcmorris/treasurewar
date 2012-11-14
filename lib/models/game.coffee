@@ -98,17 +98,14 @@ root.Game = class Game
     @processAttacks _.filter(orders, (order) -> order.command == "attack")
     @pickupTreasure _.filter(orders, (order) -> order.command == "pick up")
     # @throwTreasure _(messages, (msg) -> msg.command == "throw")
+
     moves = _.filter(orders, (order) -> order.command == "move")
-    console.log "Moves are :"
-    console.log moves
     @processMoves moves
     # @respawnDeadPlayers()
     @orders = {}
 
   processMoves: (moveOrders) ->
     for order in moveOrders
-      console.log "Processing order:"
-      console.log order
       player = @findPlayer(order.clientId)
 
       if @validMove(player, order.payload?.dir)
