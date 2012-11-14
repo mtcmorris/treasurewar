@@ -8,6 +8,8 @@ root.Game = class Game
     @mapY = 0
     @map = null
     @players = []
+    @orders = {}
+    @playerMessages = {}
 
   spawnDungeon: (x, y) ->
     @mapX = x
@@ -16,9 +18,12 @@ root.Game = class Game
 
     @map = dungeon.generate()
 
-  spawnPlayer: ->
-    player = new Player(@getRandomFloorLocation())
+  spawnPlayer: (clientId) ->
+    player = new Player(clientId, @getRandomFloorLocation())
     @players.push player
+
+  disconnectPlayer: (clientId) ->
+    @players = _.reject(@players, (p) -> p.clientId == clientId)
 
   getRandomFloorLocation: ->
     throw("There is no dungeon") if @map is null
@@ -31,6 +36,9 @@ root.Game = class Game
 
   isFloor: (position) ->
     @map[position.y][position.x] == ' '
+
+  registerOrder: (clientId, order) ->
+    @orders[clientId] = order
 
   validMove: (player, direction) ->
     newPos = @translatePosition player.position(), direction
@@ -51,8 +59,13 @@ root.Game = class Game
         console.log "ATTACKED"
         # DMG player
 
+  validAttack: (attack) ->
+    # Need attacker, attackee
+    attackedPosition = @translatePosition attack.player.position(), attack.dir
+    @findPlayerByPosition attackedPosition
+
   killDeadPlayers: ->
-    for player in players
+    for player in @players
       if player.health < 0
         player.kill()
 
@@ -62,14 +75,39 @@ root.Game = class Game
         # Do sometjing
         console.log "Treasure acquired"
 
-  tick: (messages) ->
+  tick: ->
+    @playerMessages = {}
+    messages = _.values(@orders)
     @processAttacks _(messages, (msg) -> msg.command == "attack")
     @killDeadPlayers()
     @pickupTreasure _(messages, (msg) -> msg.command == "acquire")
     # @dropTreasure _(messages, (msg) -> msg.command == "drop")
     # @processMoves  _(messages, (msg) -> msg.command == "move")
+    @orders = {}
 
-  tickMessageFor: (player) ->
+  tickPayloadFor: (clientId) ->
+    player = @findPlayer(clientId)
+    you: player.tickPayload()
+    vision: @surroundingTiles(player.position())
+
+  findPlayer: (clientId) ->
+    _.find(@players, (p) -> p.clientId == clientId)
+
+  findPlayerByPosition: (pos) ->
+    _.find(@players, (p) -> p.x == pos.x && p.y == pos.y)
+
+  surroundingTiles: (pos) ->
+    {
+      n: @map[pos.y - 1][pos.x]
+      ne: @map[pos.y - 1][pos.x + 1]
+      e: @map[pos.y][pos.x + 1]
+      se: @map[pos.y + 1][pos.x + 1]
+      s: @map[pos.y + 1][pos.x]
+      sw: @map[pos.y + 1][pos.x - 1]
+      w: @map[pos.y][pos.x - 1]
+      nw: @map[pos.y - 1][pos.x - 1]
+
+    }
 
   mapToString: ->
     output = "The Map\n"

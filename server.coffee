@@ -17,8 +17,13 @@ tickGame = ->
 setInterval tickGame, 2000
 
 io.sockets.on('connection', (socket) ->
+  console.log "Spawning player for #{socket.id}"
+  game.spawnPlayer(socket.id)
   socket.emit('news', { hello: 'world' })
   socket.emit('message', "Sup foo")
+  socket.on("disconnect",  ->
+    game.disconnectPlayer(socket.id)
+  )
   socket.on('my other event', (data) ->
     console.log(data)
   )

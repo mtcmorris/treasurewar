@@ -48,25 +48,34 @@ On connect/tick:
       y: int
     }
   }
-  vision: {
-    n: [],
-    ne: ["wall"],
-    e: ["wall"],
-    se: ["wall"],
-    s: ["treasure"],
-    sw: [player: {
+  tiles: {
+    n: " ",
+    ne: "W", //Wall
+    e: " ",
+    se: " ",
+    s:  " ",
+    sw: " ",
+    w:  "W",
+    nw: "W"
+  }
+  nearby_players: [
+    {
       name: "@mtcmorris",
       health: 55,
-      score: 4
-    }],
-    w: [stash: {
-      name: "@nullobject",
-      contents: {
-        treasure: int
-      }
-    }],
-    nw: []
-  }
+      score: 4,
+      carry_treasure: false
+      x: 3,
+      y: 4
+    }
+  ],
+  nearby_stashes: [{
+    name: "@mtcmorris",
+    treasure: int (3)
+  }],
+  nearby_treasure: [{
+    x: 5
+    y: 6
+  }]
 }
 ```
 

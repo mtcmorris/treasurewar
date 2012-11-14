@@ -2,6 +2,10 @@ require("../lib/models/game")
 describe "Game", ->
   beforeEach ->
     @game = new Game()
+    @game.map = [
+      [" ", "W"],
+      ["W", "W"]
+    ]
 
   describe "spawnDungeon", ->
     it "should create a dungeon of x,y dimensions", ->
@@ -11,19 +15,20 @@ describe "Game", ->
       expect(@game.map[0].length).toBeGreaterThan 89
 
   describe "spawnPlayer", ->
-    beforeEach ->
-      @game.map = [
-        [" ", "W"],
-        ["W", "W"]
-      ]
-
     it "should create a new player", ->
-      @game.spawnPlayer()
+      @game.spawnPlayer(1)
       expect(@game.players.length).toEqual 1
 
     it "should create the new player on a floor tile", ->
-      @game.spawnPlayer()
+      @game.spawnPlayer(1)
       expect(@game.isFloor @game.players[0].position()).toBeTruthy()
+
+  describe "disconnectPlayer", ->
+    it "should disconnect a player with a given id", ->
+      @game.spawnPlayer(1)
+      expect(@game.players.length).toEqual 1
+      @game.disconnectPlayer(1)
+      expect(@game.players.length).toEqual 0
 
   describe "validMove", ->
     beforeEach ->
@@ -31,13 +36,61 @@ describe "Game", ->
         [" ", "W"],
         [" ", " "]
       ]
-      @player = new Player(x: 0, y: 0)
+      @player = new Player(1, x: 0, y: 0)
 
     it "should return false if you'd move into a wall", ->
       expect(@game.validMove @player, "e").toBeFalsy()
 
     it "should return true if otherwise a valid move", ->
       expect(@game.validMove @player, "se").toBeTruthy()
+
+  describe "surroundingTiles", ->
+    beforeEach ->
+      @game.map = [
+        [" ", "W", " "],
+        [" ", " ", " "],
+        [" ", " ", "W"]
+      ]
+
+    it "should return the surrounding walls", ->
+      tiles = @game.surroundingTiles x: 1, y: 1
+      expect(tiles.n).toEqual "W"
+      expect(tiles.se).toEqual "W"
+      expect(tiles.nw).toEqual " "
+
+
+  describe "payload", ->
+    beforeEach ->
+      @game.map = [
+        [" ", "W", " "],
+        [" ", " ", " "],
+        [" ", " ", "W"]
+      ]
+      @player = new Player(1, x: 1, y: 1)
+      @game.players.push @player
+
+    it "should contain all the player info", ->
+      # payload = @game.tickPayloadFor(1)
+
+
+  describe "validAttack", ->
+    beforeEach ->
+      @game.map = [
+        [" ", "W", " "],
+        [" ", " ", " "],
+        [" ", " ", "W"]
+      ]
+      @attacker = new Player(1, x: 1, y: 1)
+      @attackee = new Player(1, x: 2, y: 0) # NE
+      @game.players.push @attacker
+      @game.players.push @attackee
+
+    it "should be return the attackee if a player exists at the attacking position", ->
+      expect(@game.validAttack player: @attacker, dir: "ne").toEqual @attackee
+
+    it "should not be valid if no exists at the attacking position", ->
+      expect(@game.validAttack player: @attacker, dir: "n").toBeFalsy()
+
 
   describe "translatePosition", ->
     it "should move north east -y and +x", ->
