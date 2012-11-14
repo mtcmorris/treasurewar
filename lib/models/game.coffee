@@ -22,6 +22,9 @@ root.Game = class Game
     player = new Player(clientId, @getRandomFloorLocation())
     @players.push player
 
+  setName: (clientId, name) ->
+    @findPlayer(clientId).name = name
+
   disconnectPlayer: (clientId) ->
     @players = _.reject(@players, (p) -> p.clientId == clientId)
 
@@ -37,12 +40,18 @@ root.Game = class Game
   isFloor: (position) ->
     @map[position.y][position.x] == ' '
 
-  registerOrder: (clientId, order) ->
-    @orders[clientId] = order
+  registerOrder: (order) ->
+    console.log "Order received"
+    @orders[order.clientId] = order
 
   validMove: (player, direction) ->
     newPos = @translatePosition player.position(), direction
     @isFloor(newPos)
+
+  movePlayer: (player, direction) ->
+    newPos = @translatePosition player.position(), direction
+    player.x = newPos.x
+    player.y = newPos.y
 
   translatePosition: (position, direction) ->
     pos = _.clone(position)
@@ -55,9 +64,14 @@ root.Game = class Game
 
   processAttacks: (attacks) ->
     for attack in attacks
-      if @validAttack(attack)
-        console.log "ATTACKED"
-        # DMG player
+      attacked = @validAttack(attack)
+      if attacked
+        attacked.hp -= 10
+        @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
+
+  messageClient: (player, msg) ->
+    @playerMessages[player.clientId] ||= []
+    @playerMessages[player.clientId].push msg
 
   validAttack: (attack) ->
     # Need attacker, attackee
@@ -76,22 +90,68 @@ root.Game = class Game
         console.log "Treasure acquired"
 
   tick: ->
+    console.log "Ticking!"
     @playerMessages = {}
-    messages = _.values(@orders)
-    @processAttacks _(messages, (msg) -> msg.command == "attack")
-    @killDeadPlayers()
-    @pickupTreasure _(messages, (msg) -> msg.command == "acquire")
-    # @dropTreasure _(messages, (msg) -> msg.command == "drop")
-    # @processMoves  _(messages, (msg) -> msg.command == "move")
+    orders = _.values(@orders)
+    console.log "Running orders"
+    console.log orders
+    @processAttacks _.filter(orders, (order) -> order.command == "attack")
+    @pickupTreasure _.filter(orders, (order) -> order.command == "pick up")
+    # @throwTreasure _(messages, (msg) -> msg.command == "throw")
+    moves = _.filter(orders, (order) -> order.command == "move")
+    console.log "Moves are :"
+    console.log moves
+    @processMoves moves
+    # @respawnDeadPlayers()
     @orders = {}
+
+  processMoves: (moveOrders) ->
+    for order in moveOrders
+      console.log "Processing order:"
+      console.log order
+      player = @findPlayer(order.clientId)
+
+      if @validMove(player, order.payload?.dir)
+        @movePlayer(player, order.payload?.dir)
+        @messageClient(player, notice: "You moved #{order.payload?.dir}")
+      else
+        @messageClient(player, error: "Invalid move dir: #{order.payload?.dir}")
+
+
 
   tickPayloadFor: (clientId) ->
     player = @findPlayer(clientId)
-    you: player.tickPayload()
-    vision: @surroundingTiles(player.position())
+
+    {
+      messages: @playerMessages[clientId] || []
+      you: player.tickPayload()
+      tiles: @surroundingTiles(player.position())
+      nearby_players: _(@findNearbyPlayers(player)).map((p) -> p.anonPayload())
+      nearby_stashes: @findNearbyStashes(player)
+      nearby_treasure: []
+    }
+
 
   findPlayer: (clientId) ->
     _.find(@players, (p) -> p.clientId == clientId)
+
+  findNearbyPlayers: (player) ->
+    pos = player.position()
+    _.filter(_.without(@players, player), (p) ->
+      Math.abs(p.x - pos.x) <= 1 && Math.abs(p.y - pos.y) <= 1
+    )
+
+  findNearbyStashes: (player) ->
+    pos = player.position()
+    _.filter(_.without(@players, player), (p) ->
+      Math.abs(p.stash.x - pos.x) <= 1 && Math.abs(p.stash.y - pos.y)
+    ).map((p) -> {
+      x: p.stash.x,
+      y: p.stash.y,
+      name: p.name
+      treasure: p.stash.treasure
+    })
+
 
   findPlayerByPosition: (pos) ->
     _.find(@players, (p) -> p.x == pos.x && p.y == pos.y)

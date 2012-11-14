@@ -24,3 +24,10 @@ root.Player = class Player
     carrying_treasure: @carrying_treasure
     stash_location: @stash
     position: @position()
+
+  anonPayload: ->
+    name: @name
+    health: @health
+    score: @score
+    carrying_treasure: @carrying_treasure
+    position: @position()

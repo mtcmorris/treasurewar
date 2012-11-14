@@ -69,6 +69,8 @@ On connect/tick:
     }
   ],
   nearby_stashes: [{
+    x: 4,
+    y: 4
     name: "@mtcmorris",
     treasure: int (3)
   }],
@@ -87,17 +89,18 @@ You can perform any of the following actions:
 
 *  Attack
 *  Pick up treasure
-*  Drop treasure
+*  Throw treasure
 *  Move
 
 #### Attack
 
 *You cannot attack when you are carrying treasure*
 
+Event: `attack`
+
 ```json
 {
-  command: "attack",
-  direction: "n"
+  dir: "n"
 }
 
 ```
@@ -106,29 +109,32 @@ You can perform any of the following actions:
 
 *You cannot pick up treasure if you're already carrying treasure*
 
+Event: `pick up`
+
 ```json
 {
-  command: "acquire",
-  direction: "n"
+  dir: "n"
 }
 ```
 
 #### Move
 
+Event: `move`
+
 ```json
 {
-  command: "move",
-  direction: "n"
+  dir: "n"
 }
 ```
 
-#### Drop treasure
+#### Throw treasure
 
-*You cannot drop treasure if you're not carrying treasure*
+*You cannot throw treasure if you're not carrying treasure*
+
+Event: `throw`
 
 ```json
 {
-  command: "drop",
-  direction: "n"
+  dir: "n"
 }
 ```

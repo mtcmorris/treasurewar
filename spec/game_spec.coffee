@@ -70,8 +70,49 @@ describe "Game", ->
       @game.players.push @player
 
     it "should contain all the player info", ->
-      # payload = @game.tickPayloadFor(1)
+      payload = @game.tickPayloadFor(1)
 
+  describe "setName", ->
+    beforeEach ->
+      @player = new Player(1, x: 1, y: 1)
+      @game.players.push @player
+
+    it "should set the name of the player", ->
+      @game.setName(1, "doug")
+      expect(@game.players[0].name).toBe "doug"
+      expect(@game.findPlayer(1).name).toBe "doug"
+
+
+  describe "findNearbyPlayers", ->
+    beforeEach ->
+      @player = new Player(1, x: 1, y: 1)
+      @nearby = new Player(1, x: 2, y: 0) # NE
+      @far = new Player(1, x: -2, y: 0)
+      @game.players = [@player, @nearby, @far]
+
+    it "should return players within one square", ->
+      expect(@game.findNearbyPlayers(@player)).toEqual [@nearby]
+
+    it "should not return players players within one square", ->
+      @nearby.y = 4
+      @nearby.x = 0
+      expect(@game.findNearbyPlayers(@player)).toEqual []
+
+  describe "findNearbyStashes", ->
+    beforeEach ->
+      @player = new Player(1, x: 1, y: 1)
+      @nearby = new Player(1, x: 2, y: 0) # NE
+      @nearby.y = 3 # Far!
+      @far = new Player(1, x: -2, y: 0)
+      @game.players = [@player, @nearby, @far]
+
+    it "should return nearby stashes", ->
+      expect(@game.findNearbyStashes(@player)[0]).toEqual {
+        x: @nearby.stash.x
+        y: @nearby.stash.y
+        name: @nearby.name
+        treasure: @nearby.stash.treasure
+      }
 
   describe "validAttack", ->
     beforeEach ->
