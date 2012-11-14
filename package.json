@@ -7,7 +7,7 @@
 
   "dependencies": {
     "underscore": "~1",
-    "faye-websocket": "",
+    "socket.io": "",
     "express":    "~3"
   },
 
