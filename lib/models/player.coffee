@@ -6,6 +6,7 @@ root.Player = class Player
     @health = 100
     @x = position.x
     @y = position.y
+    @kills = 0
     @score = 0
     @carrying_treasure = false
     @stash = {
@@ -24,6 +25,9 @@ root.Player = class Player
     carrying_treasure: @carrying_treasure
     stash_location: @stash
     position: @position()
+
+  calcScore: ->
+    @score = @kills + @stash.treasure * 10
 
   anonPayload: ->
     name: @name

@@ -70,6 +70,8 @@ root.Game = class Game
         attacked.health -= 10
         @messageClient(attack.player, notice: "You attacked #{attacked.name}")
         @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
+        if attacked.health <= 0
+          attack.player.kills += 1
       else
         @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
 
@@ -79,14 +81,8 @@ root.Game = class Game
     @playerMessages[player.clientId].push msg
 
   validAttack: (attack) ->
-    # Need attacker, attackee
     attackedPosition = @translatePosition attack.player.position(), attack.dir
     @findPlayerByPosition attackedPosition
-
-  killDeadPlayers: ->
-    for player in @players
-      if player.health < 0
-        player.kill()
 
   pickupTreasure: (orders) ->
     for order in orders
@@ -110,6 +106,11 @@ root.Game = class Game
     moves = _.filter(orders, (order) -> order.command == "move")
     @processMoves moves
     @respawnDeadPlayers()
+
+    # Update scores
+    for player in @players
+      player.calcScore()
+
     @orders = {}
 
   respawnDeadPlayers: ->
