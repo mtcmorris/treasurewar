@@ -31,3 +31,8 @@ root.Player = class Player
     score: @score
     carrying_treasure: @carrying_treasure
     position: @position()
+
+  respawn: ->
+    @health = 100
+    @x = @stash.x
+    @y = @stash.y

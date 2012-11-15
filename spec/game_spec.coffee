@@ -58,6 +58,44 @@ describe "Game", ->
       expect(tiles.se).toEqual "W"
       expect(tiles.nw).toEqual " "
 
+  describe "processAttacks", ->
+    beforeEach ->
+      @game.map = [
+        [" ", "W", " "],
+        [" ", " ", " "],
+        [" ", " ", "W"]
+      ]
+
+      @player = new Player(1, x: 1, y: 1)
+      @game.players.push @player
+      @order = new Order(1, "attack", dir: "n")
+      @order.player = @player
+
+
+    it "should reject orders that target an invalid square", ->
+      @game.processAttacks([@order])
+      expect(@game.playerMessages[1]).toEqual [{error: "Your attack in dir n where there was no player"}]
+
+    it "should damage a player that is in the target square", ->
+      @attackee = new Player(2, x: 1, y: 0)
+      @game.players.push @attackee
+
+      @game.processAttacks([@order])
+      expect(@game.playerMessages[1]).toEqual [{notice: 'You attacked unnamed coward'}]
+
+  describe "respawnDeadPlayers", ->
+    beforeEach ->
+      @player = new Player(1, x: 1, y: 1)
+      @game.players.push @player
+
+    it "should send the player back to their stash", ->
+      @player.health = 0
+      @player.x = 0
+      @player.y = 2
+      @game.respawnDeadPlayers()
+      expect(@player.position()).toEqual x: 1, y: 1
+      expect(@game.findPlayer(1).position()).toEqual x: 1, y: 1
+
 
   describe "payload", ->
     beforeEach ->
@@ -117,8 +155,8 @@ describe "Game", ->
   describe "validAttack", ->
     beforeEach ->
       @game.map = [
-        [" ", "W", " "],
-        [" ", " ", " "],
+        [" ", "W", " "]
+        [" ", " ", " "]
         [" ", " ", "W"]
       ]
       @attacker = new Player(1, x: 1, y: 1)

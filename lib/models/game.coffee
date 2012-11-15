@@ -1,6 +1,7 @@
 require('./dungeon')
 _ = require('underscore')
 require('./player')
+require('./order')
 
 root.Game = class Game
   constructor: ->
@@ -62,12 +63,16 @@ root.Game = class Game
     pos
 
 
-  processAttacks: (attacks) ->
-    for attack in attacks
+  processAttacks: (attack_orders) ->
+    for attack in attack_orders
       attacked = @validAttack(attack)
       if attacked
-        attacked.hp -= 10
+        attacked.health -= 10
+        @messageClient(attack.player, notice: "You attacked #{attacked.name}")
         @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
+      else
+        @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
+
 
   messageClient: (player, msg) ->
     @playerMessages[player.clientId] ||= []
@@ -90,29 +95,38 @@ root.Game = class Game
         console.log "Treasure acquired"
 
   tick: ->
-    console.log "Ticking!"
+    console.log "Tick"
     @playerMessages = {}
+
     orders = _.values(@orders)
-    console.log "Running orders"
-    console.log orders
+    _(orders).map((o) ->
+      o.player = @findPlayer(o.clientId)
+    )
+
     @processAttacks _.filter(orders, (order) -> order.command == "attack")
     @pickupTreasure _.filter(orders, (order) -> order.command == "pick up")
     # @throwTreasure _(messages, (msg) -> msg.command == "throw")
 
     moves = _.filter(orders, (order) -> order.command == "move")
     @processMoves moves
-    # @respawnDeadPlayers()
+    @respawnDeadPlayers()
     @orders = {}
+
+  respawnDeadPlayers: ->
+    deadPlayers = _(@players).filter( (p) -> p.health <= 0)
+
+    for player in deadPlayers
+      player.respawn()
+      @messageClient(player, notice: "You died :(")
 
   processMoves: (moveOrders) ->
     for order in moveOrders
-      player = @findPlayer(order.clientId)
 
-      if @validMove(player, order.payload?.dir)
-        @movePlayer(player, order.payload?.dir)
-        @messageClient(player, notice: "You moved #{order.payload?.dir}")
+      if @validMove(order.player, order.dir)
+        @movePlayer(order.player, order.dir)
+        @messageClient(order.player, notice: "You moved #{order.dir}")
       else
-        @messageClient(player, error: "Invalid move dir: #{order.payload?.dir}")
+        @messageClient(order.player, error: "Invalid move dir: #{order.dir}")
 
 
 
