@@ -34,9 +34,7 @@ root.Game = class Game
     while(true)
       x = parseInt(Math.random() * @mapX)
       y = parseInt(Math.random() * @mapY)
-
-      if @map[y][x] is ' '
-        return {x: x, y: y}
+      return {x, y} if @isFloor(y, x)
 
   isFloor: (position) ->
     @map[position.y][position.x] == ' '
