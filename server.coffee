@@ -17,7 +17,7 @@ tickGame = ->
     client.emit 'tick', game.tickPayloadFor(client.id)
 
   io.sockets.emit 'message', { message: "Hello everyone!" }
-setInterval tickGame, 2000
+setInterval tickGame, 1000
 
 io.sockets.on('connection', (socket) ->
   console.log "Spawning player for #{socket.id}"
