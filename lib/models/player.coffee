@@ -9,14 +9,22 @@ root.Player = class Player
     @kills = 0
     @score = 0
     @carrying_treasure = false
+    @item_in_hand = null
     @stash = {
       x: position.x
       y: position.y
       treasure: 0
     }
 
-  position: ->
-    {x: @x, y: @y }
+  position: -> {@x, @y}
+
+  takeTreasure: (treasure) ->
+    if @item_in_hand
+      return false
+    else
+      @item_in_hand = treasure
+      @carrying_treasure = true
+      true
 
   tickPayload: ->
     name: @name

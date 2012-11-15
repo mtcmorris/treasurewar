@@ -2,6 +2,7 @@ require('./dungeon')
 _ = require('underscore')
 require('./player')
 require('./order')
+require('./treasure')
 
 root.Game = class Game
   constructor: ->
@@ -11,6 +12,7 @@ root.Game = class Game
     @players = []
     @orders = {}
     @playerMessages = {}
+    @treasures = []
 
   spawnDungeon: (x, y) ->
     @mapX = x
@@ -35,6 +37,7 @@ root.Game = class Game
       x = parseInt(Math.random() * @mapX)
       y = parseInt(Math.random() * @mapY)
       return {x, y} if @isFloor(y, x)
+
 
   isFloor: (position) ->
     @map[position.y][position.x] == ' '
@@ -84,9 +87,10 @@ root.Game = class Game
 
   pickupTreasure: (orders) ->
     for order in orders
-      if @treasureAtLocation(order)
-        # Do sometjing
-        console.log "Treasure acquired"
+      player = @findPlayer(order.clientId)
+      if treasure = @getTreasureAtPosition(player.position)
+        player.takeTreasure(treasure)
+        console.log "Treasure acquired by #{player.name}"
 
   tick: ->
     console.log "Tick"
@@ -110,6 +114,7 @@ root.Game = class Game
       player.calcScore()
 
     @orders = {}
+    @repopTreasure()
 
   respawnDeadPlayers: ->
     deadPlayers = _(@players).filter( (p) -> p.health <= 0)
@@ -181,3 +186,15 @@ root.Game = class Game
     _.each @map, (row, y) ->
       output += row + "\n"
     output
+
+  getTreasureAtPosition: (position) -> 
+    # return the treasure object at position or null if none there
+    treasures = _.filter(@treasures, (treasure) -> treasure.position == position)
+    treasure = if treasures.length > 0 then treasures[0] else null
+
+  repopTreasure: -> 
+    # repop one treasure per player somewhere random in the dungeon
+    while @treasures.length < @players.length
+      @treasures.push new Treasure(position: @getRandomFloorLocation())
+
+  
