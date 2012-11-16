@@ -2,12 +2,16 @@ sys = require('sys')
 require('./lib/models/game')
 require('./lib/models/order')
 
+#---------------------------------------- 
+# Config Settings
+SERVER_PORT = 8000
+#---------------------------------------- 
 
 game = new Game()
 game.spawnDungeon(100, 100)
 sys.puts game.mapToString()
 
-io = require('socket.io').listen(3001);
+io = require('socket.io').listen(SERVER_PORT)
 
 tickGame = ->
   # console.log "Game tick"
