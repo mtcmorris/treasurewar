@@ -177,10 +177,36 @@ describe "Game", ->
     it "should not be valid if no exists at the attacking position", ->
       expect(@game.validAttack player: @attacker, dir: "n").toBeFalsy()
 
-
   describe "translatePosition", ->
     it "should move north east -y and +x", ->
       pos = {x: 3, y: 10}
       expect(@game.translatePosition(pos, "ne")).toEqual {x: 4, y: 9}
       expect(pos).toEqual {x: 3, y: 10}
+
+  describe "getTreasureAtPosition", ->
+    it "returns the treasure at the specified position, or null if no treasure there", ->
+      treasure_pos = {x: 3, y: 10}
+      no_treasure_pos = {x: 1, y: 1}
+      treasure = new Treasure(treasure_pos)
+      @game.treasures.push treasure
+      expect(@game.getTreasureAtPosition(treaure_pos)).toEqual treasure
+      expect(@game.getTreasureAtPosition(no_treaure_pos)).toEqual null
+
+  describe "repopTreasure", ->
+    it "creates one new treasure per player, in a random position", ->
+      #no players, no treasure
+      @game.players = []
+      expect(@game.treasures.length).toEqual 0
+      game.repopTreasure()
+      expect(@game.treasures.length).toEqual 0
+
+      #2 players, 2 treasures
+      @game.players = [new Player(), new Player()]
+      expect(@game.treasures.length).toEqual 2
+      t1 = @game.treasures[0]
+      t2 = @game.treasures[1]
+      expect(t1.type).toEqual 'treasure'
+      expect(t2.type).toEqual 'treasure'
+      #in random locations
+      expect(t1.position).notToEqual t2.position
 

@@ -195,6 +195,9 @@ root.Game = class Game
   repopTreasure: -> 
     # repop one treasure per player somewhere random in the dungeon
     while @treasures.length < @players.length
-      @treasures.push new Treasure(position: @getRandomFloorLocation())
+      position = @getRandomFloorLocation()
+      treasure_already_at_location = @getTreasureAtPosition(position)
+      if not treasure_already_at_location
+        @treasures.push new Treasure({position})
 
   

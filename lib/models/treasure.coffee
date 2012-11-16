@@ -4,3 +4,5 @@ root.Treasure = class Treasure
     @y = @position.y
 
   position: -> {@x, @y}
+
+  type: 'treasure'
