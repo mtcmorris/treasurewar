@@ -44,19 +44,27 @@ describe "Game", ->
     it "should return true if otherwise a valid move", ->
       expect(@game.validMove @player, "se").toBeTruthy()
 
-  describe "surroundingTiles", ->
+  describe "visibleTiles", ->
     beforeEach ->
       @game.map = [
-        [" ", "W", " "],
-        [" ", " ", " "],
-        [" ", " ", "W"]
+        [" ", "W", " "] # x: 1, y: 0
+        [" ", " ", " "]
+        [" ", " ", " "]
+        [" ", " ", "W"] # x: 2, y: 3
+        [" ", " ", "W"] # x: 2, y: 4 Not visible
       ]
 
-    it "should return the surrounding walls", ->
-      tiles = @game.surroundingTiles x: 1, y: 1
-      expect(tiles.n).toEqual "W"
-      expect(tiles.se).toEqual "W"
-      expect(tiles.nw).toEqual " "
+    it "should return the visible walls to the north", ->
+      tiles = @game.visibleTiles x: 1, y: 1
+      expect(tiles).toContain {x: 1, y: 0, type: "wall"}
+
+    it "should return the visible walls to a range of 2", ->
+      tiles = @game.visibleTiles x: 1, y: 1
+      expect(tiles).toContain {x: 2, y: 3, type: "wall"}
+
+    it "should not return tiles outside of the range of 2", ->
+      tiles = @game.visibleTiles x: 1, y: 1
+      expect(tiles).toNotContain {x: 2, y: 4, type: "wall"}
 
   describe "processAttacks", ->
     beforeEach ->
@@ -95,7 +103,6 @@ describe "Game", ->
       @game.respawnDeadPlayers()
       expect(@player.position()).toEqual x: 1, y: 1
       expect(@game.findPlayer(1).position()).toEqual x: 1, y: 1
-
 
   describe "payload", ->
     beforeEach ->

@@ -9,12 +9,17 @@ Inspired by [brains](https://github.com/chrislloyd/brains) - write a bot that fi
 3.   Players can steal treasure from your stash and you lose 10 points.
 4.   You earn 1 point for each player you kill.
 5.   When you're carrying treasure you can't attack.
-6.   You can see one tile in every direction and can move/attack to anywhere you can see.
+6.   You can see two tiles in every direction.
+7.   You can can attack or move one tile per tick
 7.   You can make an action (attack/move/pick up treasure/drop treasure) at most once per 2 seconds. Last command wins and invalid moves will be discarded.
 
 ## About
 
 Treasure War runs over websockets,
+
+## Developing
+
+Requires coffesscript
 
 ## Messages
 
@@ -22,7 +27,7 @@ Treasure War runs over websockets,
 
 The server generates a tile based dungeon of configurable size
 
-The server "ticks" every two seconds in which you may make a move.  When the server ticks it runs the following logic
+The server "ticks" every second in which you may make a move.  When the server ticks it runs the following logic
 
 *   Evaluate any attacks
 *   Kill any players that are dead
@@ -48,16 +53,7 @@ On connect/tick:
       y: int
     }
   }
-  tiles: {
-    n: " ",
-    ne: "W", //Wall
-    e: " ",
-    se: " ",
-    s:  " ",
-    sw: " ",
-    w:  "W",
-    nw: "W"
-  }
+  tiles: [{x: 1, y: 1, type: "wall"}, {x: 2, y: 1, type: "wall"}]
   nearby_players: [
     {
       name: "@mtcmorris",

@@ -137,7 +137,7 @@ root.Game = class Game
     {
       messages: @playerMessages[clientId] || []
       you: player.tickPayload()
-      tiles: @surroundingTiles(player.position())
+      tiles: @visibleTiles(player.position())
       nearby_players: _(@findNearbyPlayers(player)).map((p) -> p.anonPayload())
       nearby_stashes: @findNearbyStashes(player)
       nearby_treasure: []
@@ -150,7 +150,7 @@ root.Game = class Game
   findNearbyPlayers: (player) ->
     pos = player.position()
     _.filter(_.without(@players, player), (p) ->
-      Math.abs(p.x - pos.x) <= 1 && Math.abs(p.y - pos.y) <= 1
+      Math.abs(p.x - pos.x) <= 2 && Math.abs(p.y - pos.y) <= 2
     )
 
   findNearbyStashes: (player) ->
@@ -168,18 +168,15 @@ root.Game = class Game
   findPlayerByPosition: (pos) ->
     _.find(@players, (p) -> p.x == pos.x && p.y == pos.y)
 
-  surroundingTiles: (pos) ->
-    {
-      n: @map[pos.y - 1][pos.x]
-      ne: @map[pos.y - 1][pos.x + 1]
-      e: @map[pos.y][pos.x + 1]
-      se: @map[pos.y + 1][pos.x + 1]
-      s: @map[pos.y + 1][pos.x]
-      sw: @map[pos.y + 1][pos.x - 1]
-      w: @map[pos.y][pos.x - 1]
-      nw: @map[pos.y - 1][pos.x - 1]
+  visibleTiles: (pos) ->
+    visible = []
+    for k in [-2, -1, 0, 1, 2]
+      for j in [-2, -1, 0, 1, 2]
+        tile = @map[pos.y + k][pos.x + j] if @map[pos.y + k]
 
-    }
+        if tile and tile is 'W'
+          visible.push {x: pos.x + j, y: pos.y + k, type: "wall"}
+    visible
 
   mapToString: ->
     output = "The Map\n"
