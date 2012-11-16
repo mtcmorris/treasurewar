@@ -33,6 +33,44 @@ describe "Game", ->
       @game.disconnectPlayer(1)
       expect(@game.players.length).toEqual 0
 
+  describe "processMoves", ->
+    beforeEach ->
+      @player   = new Player(1, x: 1, y: 1)
+      @order    = new Order(1, "attack", dir: "n")
+      @order.player = @player
+
+      @moveSpy     = spyOn(@game, 'movePlayer')
+      @messageSpy  = spyOn(@game, 'messageClient')
+
+    describe "with a valid move", ->
+      beforeEach ->
+        spyOn(@game, 'validMove').andReturn(true)
+        @game.processMoves([@order])
+
+      it 'should move the player', ->
+        expect(@moveSpy).toHaveBeenCalledWith(@order.player, 'n')
+
+    describe "with an invalid move", ->
+      beforeEach ->
+        spyOn(@game, 'validMove').andReturn(false)
+        @game.processMoves([@order])
+
+      it 'should not move the player', ->
+        expect(@moveSpy).not.toHaveBeenCalled()
+
+    describe "errors", ->
+      beforeEach ->
+        @order.player = null
+
+      describe "when player disconnects", ->
+        it "should not assplode", ->
+          error = null
+          try
+            @game.processMoves([@order])
+          catch e
+            error = e
+          expect(error).toBeNull()
+
   describe "validMove", ->
     beforeEach ->
       @game.map = [

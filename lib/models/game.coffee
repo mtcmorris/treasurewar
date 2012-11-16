@@ -136,6 +136,7 @@ root.Game = class Game
 
   processMoves: (moveOrders) ->
     for order in moveOrders
+      return unless order.player?
 
       if @validMove(order.player, order.dir)
         @movePlayer(order.player, order.dir)
