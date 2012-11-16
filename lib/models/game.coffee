@@ -100,17 +100,12 @@ root.Game = class Game
     @processAttacks _.filter(orders, (order) -> order.command == "attack")
     @pickupTreasure _.filter(orders, (order) -> order.command == "pick up")
     # @throwTreasure _(messages, (msg) -> msg.command == "throw")
-
-    moves = _.filter(orders, (order) -> order.command == "move")
-    @processMoves moves
+    @processMoves = _.filter(orders, (order) -> order.command == "move")
     @respawnDeadPlayers()
-
-    # Update scores
-    for player in @players
-      player.calcScore()
+    @repopTreasure()
+    @updateScores()
 
     @orders = {}
-    @repopTreasure()
 
   respawnDeadPlayers: ->
     deadPlayers = _(@players).filter( (p) -> p.health <= 0)
@@ -128,7 +123,7 @@ root.Game = class Game
       else
         @messageClient(order.player, error: "Invalid move dir: #{order.dir}")
 
-
+  updateScores: -> player.calcScore() for player in @players
 
   tickPayloadFor: (clientId) ->
     player = @findPlayer(clientId)
