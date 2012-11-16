@@ -18,7 +18,6 @@ root.Game = class Game
     @mapX = x
     @mapY = y
     dungeon = new Dungeon(@mapX, @mapY)
-
     @map = dungeon.generate()
 
   spawnPlayer: (clientId) ->
@@ -43,7 +42,7 @@ root.Game = class Game
     @map[position.y][position.x] == ' '
 
   registerOrder: (order) ->
-    console.log "Order received"
+    console.log "Order received", order
     @orders[order.clientId] = order
 
   validMove: (player, direction) ->
@@ -63,7 +62,6 @@ root.Game = class Game
     if direction.match /w/ then pos.x -= 1
     pos
 
-
   processAttacks: (attack_orders) ->
     for attack in attack_orders
       attacked = @validAttack(attack)
@@ -75,7 +73,6 @@ root.Game = class Game
           attack.player.kills += 1
       else
         @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
-
 
   messageClient: (player, msg) ->
     @playerMessages[player.clientId] ||= []
