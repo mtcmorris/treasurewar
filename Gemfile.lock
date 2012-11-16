@@ -1,5 +1,5 @@
 GEM
-  remote: https://rubygems.org/
+  remote: http://rubygems.org/
   specs:
     actionpack (3.2.9)
       activemodel (= 3.2.9)
@@ -67,6 +67,7 @@ GEM
       rdoc (~> 3.4)
       thor (>= 0.14.6, < 2.0)
     rake (10.0.0)
+    rb-fsevent (0.9.2)
     rdoc (3.12)
       json (~> 1.4)
     slop (3.3.3)
@@ -84,3 +85,4 @@ PLATFORMS
 DEPENDENCIES
   guard-jasmine-node
   jasminerice
+  rb-fsevent
