@@ -94,9 +94,8 @@ root.Game = class Game
     @playerMessages = {}
 
     orders = _.values(@orders)
-    _(orders).map((o) ->
+    _(orders).map (o) =>
       o.player = @findPlayer(o.clientId)
-    )
 
     @processAttacks _.filter(orders, (order) -> order.command == "attack")
     @pickupTreasure _.filter(orders, (order) -> order.command == "pick up")
