@@ -1,4 +1,5 @@
 require("../lib/models/player")
+require("../lib/models/treasure")
 
 describe "Player", ->
   beforeEach ->
@@ -10,11 +11,12 @@ describe "Player", ->
         name: @player.name
         health: @player.health
         score: @player.score
-        carrying_treasure: @player.carrying_treasure
+        carrying_treasure: @player.isCarryingTreasure()
+        item_in_hand: @player.item_in_hand
         stash:
           x: 3
           y: 4
-          treasure: []
+          treasures: []
         position:
           x: 3
           y: 4

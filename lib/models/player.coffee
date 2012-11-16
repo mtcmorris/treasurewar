@@ -35,9 +35,9 @@ root.Player = class Player
     name: @name
     health: @health
     score: @score
-    carrying_treasure: @isCarryingTreasure
+    carrying_treasure: @isCarryingTreasure()
     item_in_hand: @item_in_hand
-    stash_location: @stash
+    stash: @stash
     position: @position()
 
   calcScore: ->
@@ -47,7 +47,8 @@ root.Player = class Player
     name: @name
     health: @health
     score: @score
-    carrying_treasure: @isCarryingTreasure
+    item_in_hand: @item_in_hand
+    carrying_treasure: @isCarryingTreasure()
     position: @position()
 
   respawn: ->

@@ -3,9 +3,12 @@ describe "Game", ->
   beforeEach ->
     @game = new Game()
     @game.map = [
-      [" ", "W"],
-      ["W", "W"]
+      ["W", "W", " "]
+      ["W", " ", " "]
+      ["W", " ", " "]
     ]
+    @game.mapX = 3
+    @game.mapY = 3
 
   describe "spawnDungeon", ->
     it "should create a dungeon of x,y dimensions", ->
@@ -189,24 +192,27 @@ describe "Game", ->
       no_treasure_pos = {x: 1, y: 1}
       treasure = new Treasure(treasure_pos)
       @game.treasures.push treasure
-      expect(@game.getTreasureAtPosition(treaure_pos)).toEqual treasure
-      expect(@game.getTreasureAtPosition(no_treaure_pos)).toEqual null
+      expect(@game.getTreasureAtPosition(treasure_pos)).toEqual treasure
+      expect(@game.getTreasureAtPosition(no_treasure_pos)).toEqual null
 
   describe "repopTreasure", ->
     it "creates one new treasure per player, in a random position", ->
       #no players, no treasure
       @game.players = []
       expect(@game.treasures.length).toEqual 0
-      game.repopTreasure()
+      @game.repopTreasure()
       expect(@game.treasures.length).toEqual 0
 
       #2 players, 2 treasures
-      @game.players = [new Player(), new Player()]
+      p1 = new Player(1, x: 3, y: 4)
+      p2 = new Player(2, x: 1, y: 1)
+      @game.players = [p1, p2]
+      @game.repopTreasure()
       expect(@game.treasures.length).toEqual 2
       t1 = @game.treasures[0]
       t2 = @game.treasures[1]
       expect(t1.type).toEqual 'treasure'
       expect(t2.type).toEqual 'treasure'
       #in random locations
-      expect(t1.position).notToEqual t2.position
+      expect(t1.position).toNotEqual t2.position
 
