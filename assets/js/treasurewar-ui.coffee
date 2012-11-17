@@ -22,15 +22,26 @@ for char, data of tileTypes
 
 
 class Tile
-  constructor: (spriteSheet, char, x, y) ->
+
+  constructor: (@stage, spriteSheet, char) ->
     @tile = new createjs.BitmapAnimation(spriteSheet)
 
     frames = tileTypes[char].frames
-    index = _.shuffle(frames)[0]
+    @index = _.shuffle(frames)[0]
+    @tile.gotoAndStop(@index)
+    @stage.addChild @tile
 
-    @tile.gotoAndStop(index)
+  draw: (x, y) ->
     @tile.x = x * 40
     @tile.y = y * 40
+
+
+class Player
+  constructor: (ui, sprite) ->
+    @tile = new Tile(ui.stage, ui.spriteSheet, 'p')
+
+  update: (data) ->
+    @tile.draw(data.x, data.y)
 
 
 class TreasureWarUI
@@ -47,8 +58,8 @@ class TreasureWarUI
 
         char = @map[cursorY][cursorX]
 
-        tile = new Tile @spriteSheet, char, cursorX, cursorY
-        @stage.addChild tile.tile
+        tile = new Tile @stage, @spriteSheet, char
+        tile.draw cursorX, cursorY
 
 
   tick: ->
@@ -73,6 +84,7 @@ class TreasureWarUI
 $ ->
   ui = new TreasureWarUI
   ui.main()
+  players = {}
 
   socket = io.connect("http://#{location.hostname}:8000")
   socket.on('map', (map) ->
@@ -82,12 +94,14 @@ $ ->
 
   socket.on('world state', (data) ->
     for item in data.items
-      tile = new Tile ui.spriteSheet, 't', item.x, item.y
-      ui.stage.addChild tile.tile
+      tile = new Tile ui.stage, ui.spriteSheet, 't'
+      tile.draw item.x, item.y
 
     for player in data.players
-      tile = new Tile ui.spriteSheet, 'p', player.x, player.y
-      ui.stage.addChild tile.tile
+      # add new or fetch existing player
+      p = (players[player.clientId] ?= new Player(ui))
+      p.update(player)
+
   )
 
   socket.on('connect', ->
