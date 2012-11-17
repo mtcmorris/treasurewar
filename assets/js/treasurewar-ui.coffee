@@ -48,17 +48,33 @@ class Player
 
   constructor: ->
     @root = @cnt = new createjs.Container
+
     @tile = new Tile('p')
     @cnt.addChild @tile.root
+
     @baseIndex = @tile.index
 
+<<<<<<< HEAD
+=======
+    @name = new createjs.Text "Fred", "bold 24px Arial", '#fff'
+    @name.textAlign = 'center'
+    @name.textBaseline = 'bottom'
+    @cnt.addChild @name
+
+
+>>>>>>> 82fff21a53efc994c030a10be6fc69a02d931164
   update: (data) ->
     index = @baseIndex
     if data.health < 50
       index += 12
     if data.carry_treasure
       index += 6
-    @tile.draw(data.x, data.y, index)
+
+    @tile.root.gotoAndStop(index || @index)
+    @cnt.x = data.x * 40
+    @cnt.y = data.y * 40
+
+    @name.text = data.name
 
 
 class Stash
