@@ -38,8 +38,8 @@ root.Game = class Game
   getRandomFloorLocation: ->
     throw("There is no dungeon") if @map is null
     while(true)
-      x = parseInt(Math.random() * @mapX)
-      y = parseInt(Math.random() * @mapY)
+      x = Math.floor(Math.random() * @mapX)
+      y = Math.floor(Math.random() * @mapY)
       return {x, y} if @isFloor({y, x})
 
   isFloor: (position) ->
