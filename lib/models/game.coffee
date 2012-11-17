@@ -120,7 +120,7 @@ root.Game = class Game
     @processAttacks _.filter(orders, (order) -> order.command == "attack")
     @pickupTreasure _.filter(orders, (order) -> order.command == "pick up")
     # @throwTreasure _(messages, (msg) -> msg.command == "throw")
-    @processMoves = _.filter(orders, (order) -> order.command == "move")
+    @processMoves _.filter(orders, (order) -> order.command == "move")
     @respawnDeadPlayers()
     @repopTreasure()
     @updateScores()
@@ -137,7 +137,6 @@ root.Game = class Game
   processMoves: (moveOrders) ->
     for order in moveOrders
       return unless order.player?
-
       if @validMove(order.player, order.dir)
         @movePlayer(order.player, order.dir)
         @messageClient(order.player, notice: "You moved #{order.dir}")
