@@ -34,7 +34,6 @@ root.Game = class Game
   getRandomFloorLocation: ->
     throw("There is no dungeon") if @map is null
     while(true)
-      console.log 'finding random floor location...'
       x = parseInt(Math.random() * @mapX)
       y = parseInt(Math.random() * @mapY)
       return {x, y} if @isFloor({y, x})
@@ -149,7 +148,7 @@ root.Game = class Game
       tiles: @visibleTiles(player.position())
       nearby_players: _(@findNearbyPlayers(player)).map((p) -> p.anonPayload())
       nearby_stashes: @findNearbyStashes(player)
-      nearby_treasure: []
+      nearby_items: @findNearbyItems(player)
     }
 
   visualizerTickPayload: ->
@@ -179,6 +178,11 @@ root.Game = class Game
       treasure: p.stash.treasure
     })
 
+  findNearbyItems: (player) ->
+    pos = player.position()
+    _.filter(@items, (i) ->
+      Math.abs(i.position().x - pos.x) <= 1 && Math.abs(i.position().y - pos.y) <= 1
+    )
 
   findPlayerByPosition: (pos) ->
     _.find(@players, (p) -> p.x == pos.x && p.y == pos.y)
@@ -217,7 +221,6 @@ root.Game = class Game
   repopTreasure: ->
     # repop one treasure per player somewhere random in the dungeon
     until enough_treasure = @treasures().length >= @players.length
-      console.log "popping more treasure..."
       position = @getRandomFloorLocation()
       treasure_already_at_location = @getItemAtPosition(position)?.is_treasure
       if not treasure_already_at_location
