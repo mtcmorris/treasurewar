@@ -115,8 +115,8 @@ root.Game = class Game
           item.position.x = player.position().x
           item.position.y = player.position().y
           @items.push item
-          console.log "#{player.name} dropped #{item.name}"
-          @messageClient(player, notice: "You dropped #{item.name}")
+          console.log "#{player.name} dropped #{item.name} onto the map"
+          @messageClient(player, notice: "You dropped #{item.name} onto the map")
       catch exception
         console.log "Error processing drop ", drop_order
 
