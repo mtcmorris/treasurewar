@@ -50,16 +50,40 @@ describe "Player", ->
       expect(@player.pickup(treasure)).toEqual false
 
   describe "#dropHeldItem(item)", ->
-    beforeEach ->
+    it 'removes the item from hand', ->
       @item = new Treasure(@player.position())
       @player.pickup(@item)
+      expect(@player.item_in_hand).toEqual @item
+      @player.dropHeldItem()
+      expect(@player.item_in_hand).toEqual null
 
-    it "drops the item if you're holding it and returns it", ->
-      #item when holding item
-      result = @player.dropHeldItem()
-      expect(result).toEqual @item
+    describe 'when dropping treasure on stash', ->
+      beforeEach ->
+        @item = new Treasure(@player.position())
+        @player.pickup(@item)
+        @player.x = @player.stash.x
+        @player.y = @player.stash.y
+        @deposit_spy = spyOn(@player, 'depositTreasure')
+        @drop_result = @player.dropHeldItem()
 
-      #false when not holding
-      @player.item_in_hand = null
-      result = @player.dropHeldItem()
-      expect(result).toEqual false
+      it 'returns false', ->
+        expect(@drop_result).toEqual false
+
+      it 'deposits treasure', ->
+        expect(@deposit_spy).toHaveBeenCalledWith(@item)
+
+    describe 'when dropping on non stash', ->
+      beforeEach ->
+        @item = new Treasure(@player.position())
+        @player.pickup(@item)
+        @player.x = @player.stash.x + 10
+        @player.y = @player.stash.y + 10
+        @drop_result = @player.dropHeldItem()
+
+      it 'returns true', ->
+        expect(@drop_result).toEqual true
+
+    describe 'when holding nothing', ->
+      it 'returns false', ->
+        @player.item_in_hand = null
+        expect(@player.dropHeldItem()).toEqual false
