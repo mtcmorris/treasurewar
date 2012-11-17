@@ -268,6 +268,20 @@ describe "Game", ->
         treasure: @nearby.stash.treasure
       }
 
+  describe "findNearbyItems", ->
+    beforeEach ->
+      @player = new Player(1, x: 1, y: 1)
+      @nearby = new Treasure(@player.position())
+      @far = new Treasure(@player.position())
+      @far.x = @player.position.x + 1000
+      @game.players = [@player]
+      @game.items = [@nearby, @far]
+      @nearby_items = @game.findNearbyItems(@player)
+
+    it "should return nearby items", ->
+      expect(@nearby_items).toContain(@nearby)
+      expect(@nearby_items).not.toContain(@far)
+
   describe "validAttack", ->
     beforeEach ->
       @game.map = [

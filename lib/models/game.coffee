@@ -148,7 +148,7 @@ root.Game = class Game
       tiles: @visibleTiles(player.position())
       nearby_players: _(@findNearbyPlayers(player)).map((p) -> p.anonPayload())
       nearby_stashes: @findNearbyStashes(player)
-      nearby_treasure: []
+      nearby_items: @findNearbyItems(player)
     }
 
   visualizerTickPayload: ->
@@ -178,6 +178,11 @@ root.Game = class Game
       treasure: p.stash.treasure
     })
 
+  findNearbyItems: (player) ->
+    pos = player.position()
+    _.filter(@items, (i) ->
+      Math.abs(i.position().x - pos.x) <= 1 && Math.abs(i.position().y - pos.y) <= 1
+    )
 
   findPlayerByPosition: (pos) ->
     _.find(@players, (p) -> p.x == pos.x && p.y == pos.y)
