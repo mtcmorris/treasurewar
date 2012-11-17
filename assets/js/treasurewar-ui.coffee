@@ -28,10 +28,10 @@ class Tile
 
     frames = tileTypes[char].frames
     @index = _.shuffle(frames)[0]
-    @tile.gotoAndStop(@index)
     @stage.addChild @tile
 
-  draw: (x, y) ->
+  draw: (x, y, index) ->
+    @tile.gotoAndStop(index || @index)
     @tile.x = x * 40
     @tile.y = y * 40
 
@@ -39,9 +39,15 @@ class Tile
 class Player
   constructor: (ui, sprite) ->
     @tile = new Tile(ui.stage, ui.spriteSheet, 'p')
+    @baseIndex = @tile.index
 
   update: (data) ->
-    @tile.draw(data.x, data.y)
+    index = @baseIndex
+    if data.health < 50
+      index += 12
+    if data.carry_treasure
+      index += 6
+    @tile.draw(data.x, data.y, index)
 
 
 class Treasure
