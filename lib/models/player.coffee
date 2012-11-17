@@ -26,6 +26,14 @@ root.Player = class Player
       @item_in_hand = item
       true
 
+  dropHeldItem: ->
+    if @item_in_hand
+      item = @item_in_hand
+      @item_in_hand = null
+      return item
+    else
+      return false
+
   depositTreasure: (treasure) -> 
     if @item_in_hand.type == 'treasure'
       @stash.treasures.push treasure

@@ -70,9 +70,10 @@ On connect/tick:
     name: "@mtcmorris",
     treasure: int (3)
   }],
-  nearby_treasure: [{
+  nearby_items: [{
     x: 5
     y: 6
+    is_treasure: true
   }]
 }
 ```

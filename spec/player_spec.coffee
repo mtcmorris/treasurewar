@@ -39,3 +39,18 @@ describe "Player", ->
       @player.item_in_hand = new Treasure({x: 1, y: 2})
       treasure = new Treasure({x: 0, y: 0})
       expect(@player.pickup(treasure)).toEqual false
+
+  describe "#dropHeldItem(item)", ->
+    beforeEach ->
+      @item = new Treasure(@player.position())
+      @player.pickup(@item)
+
+    it "drops the item if you're holding it and returns it", ->
+      #item when holding item
+      result = @player.dropHeldItem()
+      expect(result).toEqual @item
+
+      #false when not holding
+      @player.item_in_hand = null
+      result = @player.dropHeldItem()
+      expect(result).toEqual false
