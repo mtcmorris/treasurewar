@@ -1,5 +1,3 @@
-
-
 tileTypes =
   'W':
     name: 'walls'
@@ -23,45 +21,33 @@ for char, data of tileTypes
   animations[char] = frames: data.frames
 
 
-class Sprites
+class Tile
 
-  constructor: (sprites) ->
-    @spritesheet = new createjs.SpriteSheet
-      images: [sprites]
-      animations: animations
-      frames: {width: 40, height: 40}
-    @sprite = new createjs.BitmapAnimation @spritesheet
+  constructor: (@stage, spriteSheet, char) ->
+    @tile = new createjs.BitmapAnimation(spriteSheet)
 
-  show: (index, stage, x, y) ->
+    frames = tileTypes[char].frames
+    @index = _.shuffle(frames)[0]
+    @tile.gotoAndStop(@index)
+    @stage.addChild @tile
 
-    stage.addChild @sprite
-    @sprite.gotoAndStop index
-    @sprite.x = x
-    @sprite.y = y
+  draw: (x, y) ->
+    @tile.x = x * 40
+    @tile.y = y * 40
+
+
+class Player
+  constructor: (ui, sprite) ->
+    @tile = new Tile(ui.stage, ui.spriteSheet, 'p')
+
+  update: (data) ->
+    @tile.draw(data.x, data.y)
 
 
 class TreasureWarUI
+  renderMap: () ->
+    return unless @map && @spritesReady
 
-  constructor: ->
-    @loaded = 0
-
-  handleImageLoad: (event) =>
-    @loaded = @loaded + 1
-    console.log @loaded
-
-  randomFrame: (frames) ->
-    _.shuffle(frames)[0]
-
-  randomSprite: (char, pos) ->
-    s = new Sprites @sprites
-    index = @randomFrame tileTypes[char].frames
-    console.log "randomFrame", index, pos.x, pos.y
-    s.show index, @stage, pos.x * 40, pos.y * 40
-
-  placeFloorTile: (pos) ->
-    @randomSprite 'f', pos
-
-  renderMap: (@map) ->
     width = 100
     height = 100
 
@@ -72,36 +58,50 @@ class TreasureWarUI
 
         char = @map[cursorY][cursorX]
 
-        tile_name = tileTypes[char].name
-        console.log tile_name
+        tile = new Tile @stage, @spriteSheet, char
+        tile.draw cursorX, cursorY
 
-        pos = { x: cursorX, y: cursorY }
-        if tile_name is 'players' or tile_name is 'treasures'
-          @placeFloorTile pos
-        @randomSprite char, pos
 
-    @stage.update()
+  tick: ->
+    if @spriteSheet.complete
+      createjs.Ticker.removeListener @
+      @spritesReady = true
+      @renderMap()
 
 
   main: ->
-    @stage = new createjs.Stage("TreasureWar")
+    @spriteSheet = new createjs.SpriteSheet
+      images: ["sprite.png"]
+      animations: animations
+      frames: {width: 40, height: 40}
 
-    @sprites = new Image
-    @sprites.src = "sprite.png"
-    @sprites.onload = @handleImageLoad
+    createjs.Ticker.addListener @
+
+    @stage = new createjs.Stage("TreasureWar")
+    createjs.Ticker.addListener @stage
 
 
 $ ->
   ui = new TreasureWarUI
   ui.main()
+  players = {}
 
-  socket = io.connect('http://localhost:8000')
+  socket = io.connect("http://#{location.hostname}:8000")
   socket.on('map', (map) ->
-    console.log map
-    ui.renderMap(map)
+    ui.map = map
+    ui.renderMap()
   )
+
   socket.on('world state', (data) ->
-    # Render players and things
+    for item in data.items
+      tile = new Tile ui.stage, ui.spriteSheet, 't'
+      tile.draw item.x, item.y
+
+    for player in data.players
+      # add new or fetch existing player
+      p = (players[player.clientId] ?= new Player(ui))
+      p.update(player)
+
   )
 
   socket.on('connect', ->

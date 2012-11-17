@@ -6,6 +6,9 @@ require('./treasure')
 
 root.Game = class Game
   constructor: ->
+    @options =
+      player_vision_distance: 3
+    
     @mapX = 0
     @mapY = 0
     @map = null
@@ -34,7 +37,6 @@ root.Game = class Game
   getRandomFloorLocation: ->
     throw("There is no dungeon") if @map is null
     while(true)
-      console.log 'finding random floor location...'
       x = parseInt(Math.random() * @mapX)
       y = parseInt(Math.random() * @mapY)
       return {x, y} if @isFloor({y, x})
@@ -64,30 +66,33 @@ root.Game = class Game
     pos
 
   processAttacks: (attack_orders) ->
-    for attack in attack_orders
-      attacked = @validAttack(attack)
-      if attacked
-        attacked.health -= 10
-        @messageClient(attack.player, notice: "You attacked #{attacked.name}")
-        @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
-        if attacked.health <= 0
-          attack.player.kills += 1
-      else
-        @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
+      for attack in attack_orders
+        try
+          attacked = @validAttack(attack)
+          if attacked
+            attacked.health -= 10
+            @messageClient(attack.player, notice: "You attacked #{attacked.name}")
+            @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
+            if attacked.health <= 0
+              attack.player.kills += 1
+          else
+            @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
+        catch exception
+          console.log "Error processing attack: ", attack
 
   processPickups: (pickup_orders) ->
     for order in pickup_orders
-      player = @findPlayer(order.clientId)
-      target_item = @getItemAtPosition(player.position())
-      if target_item && @playerCanPickupItem(player, target_item)
-        console.log "#{player.name} picked up #{target_item.name} at #{target_item.position()}"
-        player.pickup(target_item)
-        @items = _.filter(@items, (item) -> item.id != target_item.id)
-        @messageClient(player, notice: "You picked up #{target_item.name}")
-      else
-        @messageClient(player, error: "Nothing to pick up here")
-
-
+      try 
+        player = @findPlayer(order.clientId)
+        target_item = @getItemAtPosition(player.position())
+        if target_item && @playerCanPickupItem(player, target_item)
+          player.pickup(target_item)
+          @items = _.filter(@items, (item) -> item.id != target_item.id)
+          @messageClient(player, notice: "You picked up #{target_item.name}")
+        else
+          @messageClient(player, error: "Nothing to pick up here")
+      catch exception
+        console.log "Error processing pickup: ", pickup
 
   messageClient: (player, msg) ->
     @playerMessages[player.clientId] ||= []
@@ -98,15 +103,18 @@ root.Game = class Game
     @findPlayerByPosition attackedPosition
 
   processDrops: (orders) ->
-    for dorp_order in orders
-      player = @findPlayer(drop_order.clientId)
-      item = player.dropHeldItem()
-      @items.push item
-      console.log "#{player.name} dropped #{item.name}"
-      @messageClient(player, notice: "You dropped #{item.name}")
+    for drop_order in orders
+      try
+        player = @findPlayer(drop_order.clientId)
+        item = player.dropHeldItem()
+        @items.push item
+        console.log "#{player.name} dropped #{item.name}"
+        @messageClient(player, notice: "You dropped #{item.name}")
+      catch exception
+        console.log "Error processing drop ", drop_order
+        
 
   tick: ->
-    console.log "Tick"
     @playerMessages = {}
 
     # attach player for each order
@@ -131,12 +139,16 @@ root.Game = class Game
 
   processMoves: (moveOrders) ->
     for order in moveOrders
-      return unless order.player?
-      if @validMove(order.player, order.dir)
-        @movePlayer(order.player, order.dir)
-        @messageClient(order.player, notice: "You moved #{order.dir}")
-      else
-        @messageClient(order.player, error: "Invalid move dir: #{order.dir}")
+      try 
+        return unless order.player?
+        if @validMove(order.player, order.dir)
+          @movePlayer(order.player, order.dir)
+          @messageClient(order.player, notice: "You moved #{order.dir}")
+        else
+          @messageClient(order.player, error: "Invalid move dir: #{order.dir}")
+      catch exception
+        console.log "Error processing move ", order
+
 
   updateScores: -> player.calcScore() for player in @players
 
@@ -147,9 +159,9 @@ root.Game = class Game
       messages: @playerMessages[clientId] || []
       you: player.tickPayload()
       tiles: @visibleTiles(player.position())
-      nearby_players: _(@findNearbyPlayers(player)).map((p) -> p.anonPayload())
+      nearby_players: _.without(@findNearbyPlayers(player)).map((p) -> p.anonPayload())
       nearby_stashes: @findNearbyStashes(player)
-      nearby_treasure: []
+      nearby_items: @findNearbyItems(player)
     }
 
   visualizerTickPayload: ->
@@ -162,36 +174,75 @@ root.Game = class Game
   findPlayer: (clientId) ->
     _.find(@players, (p) -> p.clientId == clientId)
 
+  findNear: (options) ->
+    dist = @options.player_vision_distance
+    pos = options.pos
+    switch options.find
+      when 'players'
+        _.filter(@players, (p) -> Math.abs(p.x - pos.x) <= dist && Math.abs(p.y - pos.y) <= dist)
+      when 'stashes'
+        _.filter(@players, (p) ->
+          Math.abs(p.stash.x - pos.x) <= dist && Math.abs(p.stash.y - pos.y <= dist)
+        ).map((p) -> {
+          x: p.stash.x,
+          y: p.stash.y,
+          name: p.name
+          treasures: p.stash.treasures
+        })
+      when 'items' 
+        _.filter(@items, (i) ->
+          Math.abs(i.position().x - pos.x) <= dist && Math.abs(i.position().y - pos.y) <= dist)
+
   findNearbyPlayers: (player) ->
-    pos = player.position()
-    _.filter(_.without(@players, player), (p) ->
-      Math.abs(p.x - pos.x) <= 2 && Math.abs(p.y - pos.y) <= 2
-    )
+    _.without(@findNear(find: 'players', pos: player.position()), player)
 
   findNearbyStashes: (player) ->
-    pos = player.position()
-    _.filter(_.without(@players, player), (p) ->
-      Math.abs(p.stash.x - pos.x) <= 1 && Math.abs(p.stash.y - pos.y)
-    ).map((p) -> {
+    _.without(@findNear(find: 'players', pos: player.position()), player).map((p) -> {
       x: p.stash.x,
       y: p.stash.y,
       name: p.name
       treasure: p.stash.treasure
     })
 
+  findNearbyItems: (player) ->
+    @findNear(find: 'items', pos: player.position())
 
   findPlayerByPosition: (pos) ->
     _.find(@players, (p) -> p.x == pos.x && p.y == pos.y)
 
   visibleTiles: (pos) ->
-    visible = []
-    for k in [-2, -1, 0, 1, 2]
-      for j in [-2, -1, 0, 1, 2]
-        tile = @map[pos.y + k][pos.x + j] if @map[pos.y + k]
+    visibles = []
 
-        if tile and tile is 'W'
-          visible.push {x: pos.x + j, y: pos.y + k, type: "wall"}
-    visible
+    # get map tiles to show
+    dist = @options.player_vision_distance
+
+    for y in [(dist * -1)..dist]
+      for x in [(dist * -1)..dist]
+        current_x = pos.x + x
+        current_y = pos.y + y
+        tile = @map[current_y][current_x] if @map[current_y]
+        if tile
+          tile_type = switch tile
+            when "W" then "wall"
+            when "f" then "floor"
+          visibles.push {x: current_x, y: current_y, type: tile_type}
+  
+    # add in players, stashes, items
+    items = @findNear(find: 'items', pos: pos)
+    item_hashes = _.map(items, (item) -> item.anonPayload())
+    visibles = visibles.concat item_hashes
+
+    stashes = @findNear(find: 'stashes', pos: pos)
+    stash_hashes = _.map(stashes, (stash) ->
+      return _.extend stash, {type: 'stash'}
+    )
+    visibles = visibles.concat stash_hashes
+
+    players = @findNear(find: 'players', pos: pos)
+    player_hashes = _.map(players, (player) -> player.anonPayload())
+    visibles = visibles.concat player_hashes
+
+    visibles
 
   mapToString: ->
     output = "The Map\n"
@@ -217,7 +268,6 @@ root.Game = class Game
   repopTreasure: ->
     # repop one treasure per player somewhere random in the dungeon
     until enough_treasure = @treasures().length >= @players.length
-      console.log "popping more treasure..."
       position = @getRandomFloorLocation()
       treasure_already_at_location = @getItemAtPosition(position)?.is_treasure
       if not treasure_already_at_location

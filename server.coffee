@@ -29,7 +29,7 @@ app.get('/', (req, res) ->
 )
 
 game = new Game()
-game.spawnDungeon(100, 100)
+game.spawnDungeon(40, 40)
 sys.puts game.mapToString()
 
 visualizers = []
@@ -52,9 +52,6 @@ setInterval tickGame, 1000
 isVisualizer = (socket) ->
   _(visualizers).contains socket.id
 
-validForVisualizer = (ip) ->
-  ip == "127.0.0.1"
-
 io.sockets.on('connection', (socket) ->
   console.log "Spawning player for #{socket.id}"
   game.spawnPlayer(socket.id)
@@ -64,10 +61,9 @@ io.sockets.on('connection', (socket) ->
   )
 
   socket.on("visualizer", (data) ->
-    if validForVisualizer(socket.handshake.address.address)
-      visualizers.push socket.id
-      game.disconnectPlayer(socket.id)
-      socket.emit 'map', game.map
+    visualizers.push socket.id
+    game.disconnectPlayer(socket.id)
+    socket.emit 'map', game.map
   )
 
   socket.on("move", (data) ->

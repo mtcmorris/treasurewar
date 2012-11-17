@@ -1,7 +1,9 @@
+_ = require('underscore')
 require("../lib/models/game")
 describe "Game", ->
   beforeEach ->
     @game = new Game()
+    @game.options.player_vision_distance = 2
     @game.map = [
       ["W", "W", "f"]
       ["W", "f", "f"]
@@ -85,7 +87,7 @@ describe "Game", ->
     it "should return true if otherwise a valid move", ->
       expect(@game.validMove @player, "se").toBeTruthy()
 
-  describe "visibleTiles", ->
+  describe "#visibleTiles(position)", ->
     beforeEach ->
       @game.map = [
         ["f", "W", "f"] # x: 1, y: 0
@@ -94,6 +96,8 @@ describe "Game", ->
         ["f", "f", "W"] # x: 2, y: 3
         ["f", "f", "W"] # x: 2, y: 4 Not visible
       ]
+      @treasure_x0y1 = new Treasure(x: 0, y: 1) 
+      @game.items.push @treasure_x0y1
 
     it "should return the visible walls to the north", ->
       tiles = @game.visibleTiles x: 1, y: 1
@@ -106,6 +110,23 @@ describe "Game", ->
     it "should not return tiles outside of the range of 2", ->
       tiles = @game.visibleTiles x: 1, y: 1
       expect(tiles).toNotContain {x: 2, y: 4, type: "wall"}
+
+    it "returns all treasure visible", ->
+      tiles = @game.visibleTiles x: 1, y: 1
+      items = _.filter(tiles, (tile) -> tile.type == 'treasure' )
+      expect(items).toEqual [@treasure_x0y1.anonPayload()]
+
+    it "returns all players visible", ->
+      @player = new Player(1, {x: 1, y: 1})
+      @player2 = new Player(2, {x: 1, y: 2})
+      @game.players = [@player, @player2]
+      tiles = @game.visibleTiles x: 1, y: 1
+      players = _.filter(tiles, (tile) -> tile.type == 'player' )
+      expect(players).toEqual [@player.anonPayload(), @player2.anonPayload()]
+
+    it "returns all stashes visible", ->
+      # TODO refactor stash to object with anonPAyload method, then implement this spec
+
 
   describe "processAttacks", ->
     beforeEach ->
@@ -162,10 +183,10 @@ describe "Game", ->
       @game.processPickups([@order])
       expect(@game.playerMessages[1]).toEqual [{notice: "You picked up #{@item.name}"}]
 
-    # it "removes the item from game.items", ->
-    #   expect(@game.items).toEqual [@item]
-    #   @game.processPickups([@order])
-    #   expect(@game.items).toEqual []
+    it "removes the item from game.items", ->
+      expect(@game.items).toEqual [@item]
+      @game.processPickups([@order])
+      expect(@game.items).toEqual []
 
   describe "respawnDeadPlayers", ->
     beforeEach ->
@@ -180,7 +201,7 @@ describe "Game", ->
       expect(@player.position()).toEqual x: 1, y: 1
       expect(@game.findPlayer(1).position()).toEqual x: 1, y: 1
 
-  describe "payload", ->
+  describe "#tickPayloadFor", ->
     beforeEach ->
       @game.map = [
         ["f", "W", "f"],
@@ -189,9 +210,41 @@ describe "Game", ->
       ]
       @player = new Player(1, x: 1, y: 1)
       @game.players.push @player
+      @payload = @game.tickPayloadFor(1)
 
-    it "should contain all the player info", ->
-      payload = @game.tickPayloadFor(1)
+    it "has messages[]", ->
+      expect(@payload.messages).toEqual []
+
+    it "has info about the player", ->
+      player_info = @payload.you
+      expected_keys = "name,health,score,carrying_treasure,item_in_hand,stash,position"
+      for key in expected_keys.split(',')
+        expect(player_info[key]).toBeDefined()
+
+    it "has tiles", ->
+      expect(@payload.tiles).toBeDefined()
+
+  describe "#visualizerTickPayload", ->
+    beforeEach ->
+      @game.map = [
+        ["f", "W", "f"],
+        ["f", "f", "f"],
+        ["f", "f", "W"]
+      ]
+      @player = new Player(1, x: 1, y: 1)
+      @game.players.push @player
+      @game.tick()
+      @payload = @game.visualizerTickPayload()
+
+    it "has players", ->
+      expect(@payload.players.length).toBeDefined()
+
+    it "has items", ->
+      expect(@payload.items.length).toBeDefined()
+      # some treasure
+      treasures = _.filter @payload.items, (item) -> item.is_treasure == true
+      expect(treasures.length).toBeGreaterThan(0)
+
 
   describe "setName", ->
     beforeEach ->
@@ -207,15 +260,15 @@ describe "Game", ->
     beforeEach ->
       @player = new Player(1, x: 1, y: 1)
       @nearby = new Player(1, x: 2, y: 0) # NE
-      @far = new Player(1, x: -2, y: 0)
+      @far = new Player(1, x: @game.options.player_vision_distance + 5, y: 0)
       @game.players = [@player, @nearby, @far]
 
-    it "should return players within one square", ->
+    it "should return players within player_vision_distance", ->
       expect(@game.findNearbyPlayers(@player)).toEqual [@nearby]
 
-    it "should not return players players within one square", ->
-      @nearby.y = 4
-      @nearby.x = 0
+    it "should not return players farther than vision_distance", ->
+      @nearby.y = 50
+      @nearby.x = 30
       expect(@game.findNearbyPlayers(@player)).toEqual []
 
   describe "findNearbyStashes", ->
@@ -233,6 +286,20 @@ describe "Game", ->
         name: @nearby.name
         treasure: @nearby.stash.treasure
       }
+
+  describe "findNearbyItems", ->
+    beforeEach ->
+      @player = new Player(1, x: 1, y: 1)
+      @nearby = new Treasure(@player.position())
+      @far = new Treasure(@player.position())
+      @far.x = @player.position.x + 1000
+      @game.players = [@player]
+      @game.items = [@nearby, @far]
+      @nearby_items = @game.findNearbyItems(@player)
+
+    it "should return nearby items", ->
+      expect(@nearby_items).toContain(@nearby)
+      expect(@nearby_items).not.toContain(@far)
 
   describe "validAttack", ->
     beforeEach ->
