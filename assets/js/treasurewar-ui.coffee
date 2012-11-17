@@ -117,6 +117,18 @@ $ ->
       p = (players[player.clientId] ?= new Player(ui))
       p.update(player)
 
+    for event in data.events
+      console.log event
+
+      if event == "attack"
+        pewIndex = parseInt(Math.random() * 5) + 1
+        window.clips["pew#{pewIndex}"].play()
+      else if event == "kill"
+        # console.log "LOL"
+        window.clips["bugle"].play()
+
+
+
     $("#leaderboard").empty()
     asc_players = _(data.players).sortBy (p) -> p.score * -1
     for player in asc_players
@@ -133,3 +145,9 @@ $ ->
   socket.on('connect', ->
     socket.emit("visualizer", {})
   )
+
+  audioClips = ["pew1", "pew2", "pew3", "pew4", "pew5", "bugle"]
+  window.clips = {}
+
+  for clip in audioClips
+    window.clips[clip] = new buzz.sound("/sounds/#{clip}", formats: ["mp3"])
