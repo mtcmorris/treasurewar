@@ -31,15 +31,23 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    width: 180px;
-    padding: 15px;
-    background-color: rgba(255,183,16, .85);
+    width: 240px;
+    padding: 15px 15px 20px 15px;
+    background-color: rgba(255,255,255, .95);
     color: black;
-    text-shadow: -1px 0 #FDE59B;
     font: 14px Menlo, monospace;
     line-height: 1;
     z-index: 1;
-    h1 { font-weight: normal; font-size: 18px; font-weight: bold; text-align: center }
+    border-bottom-right-radius: 4px;
+    h1 {
+      font-weight: normal;
+      font-size: 22px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-top: -2px;
+      span.yaar { font-size: 42px; line-height: 17px; position: relative; top: 5px; margin-right: -5px; }
+      span.space { margin-left: -4px; }
+    }
     .players {
       margin-top: 10px;
       .player {
@@ -75,6 +83,7 @@ body {
       }
     }
     .empty {
+      padding-top: 5px;
       text-align: center;
     }
   }
