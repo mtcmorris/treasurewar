@@ -102,9 +102,9 @@ class TreasureWarUI
     @treasures = {}
     @stashes = {}
 
+
   renderMap: () ->
     return unless @map && @spritesReady
-
 
     for cursorY in [0..(@map.length - 1)]
       for cursorX in [0..(@map[cursorY].length - 1)]
@@ -114,23 +114,23 @@ class TreasureWarUI
         tile.draw cursorX, cursorY
 
 
+  addChild: (child) ->
+    @stage.addChild child.root
+    child
+
+
   updateTreasure: (treasure) ->
     # need to remove treasure that have been picked up
-    t = @treasures[treasure.clientId] ||= new Treasure
-    @stage.addChild(t.root) unless t.root.parent
+    t = @treasures[treasure.clientId] ||= @addChild(new Treasure)
     t.update(treasure)
 
 
-  updatePlayer: (player) ->
-    p = @players[player.clientId] ||= new Player
+  updatePlayer: (data) ->
+    p = @players[data.clientId] ||= @addChild(new Player)
+    p.update(data)
 
-    @stage.addChild(p.root) unless p.root.parent
-
-    p.update(player)
-
-    s = (@stashes[player.clientId] ?= new Stash(p))
-    @stage.addChild(s.root) unless s.root.parent
-    s.update(player)
+    s = @stashes[data.clientId] ||= @addChild(new Stash(p))
+    s.update(data)
 
   tick: ->
     if spriteSheet?.complete
@@ -161,11 +161,9 @@ class TreasureWarUI
 
   resize: (canvas) ->
     scale =
-      x: (window.innerWidth - 10) / canvas.width();
-      y: (window.innerHeight - 10) / canvas.height();
+      x: (window.innerWidth - 10) / canvas.width()
+      y: (window.innerHeight - 10) / canvas.height()
 
-    # if scale.x < 1 || scale.y < 1
-    #   scale = '1, 1'
     if scale.x < scale.y
       scale = scale.x + ', ' + scale.x
     else
@@ -174,10 +172,27 @@ class TreasureWarUI
     canvas.css("transform-origin", "left top")
     canvas.css("transform", "scale(#{scale})")
 
+class Leaderboard
+  constructor: (@el) ->
+  update: (players) ->
+    asc_players = _(players).sortBy (p) -> p.score * -1
+    el = @el.find(".players")
+    el.empty()
+    if asc_players.length == 0
+      el.append """<div class='empty'>No players :(</div>"""
+    else
+      for p in asc_players
+        el.append """<div class='player'>
+          <div class='name'>#{p.name}</div>
+          <div class='score'>#{p.score}</div>
+        </div>
+        """
+
 $ ->
   ui = new TreasureWarUI
   ui.main()
   ui.fullscreenify()
+  leaderboard = new Leaderboard($("#leaderboard"))
 
   socket = io.connect("http://#{location.hostname}:8000")
   socket.on('map', (map) ->
@@ -192,25 +207,16 @@ $ ->
     for player in data.players
       ui.updatePlayer(player)
 
+    leaderboard.update(data.players)
 
-    for event in data.events
-      if event == "attack"
-        pewIndex = parseInt(Math.random() * 5) + 1
-        window.clips["pew#{pewIndex}"].play()
-      else if event == "kill"
-        # console.log "LOL"
-        window.clips["bugle"].play()
-
-    $("#leaderboard").empty()
-    asc_players = _(data.players).sortBy (p) -> p.score * -1
-    for player in asc_players
-      div = """<div>
-        <h1>#{player.name}</h1>
-        <h2>#{player.score}</h2>
-      </div>
-      """
-      $("#leaderboard").append div
-
+    if data.events
+      for event in data.events
+        if event == "attack"
+          pewIndex = parseInt(Math.random() * 5) + 1
+          window.clips["pew#{pewIndex}"].play()
+        else if event == "kill"
+          # console.log "LOL"
+          window.clips["bugle"].play()
   )
 
   socket.on('connect', ->

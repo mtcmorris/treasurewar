@@ -1,6 +1,8 @@
 @blue: #5B83AD;
 @yellow: #FFFFE0;
 
+* { margin: 0; padding: 0; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+
 body {
   padding: 0;
   margin: 0;
@@ -23,5 +25,52 @@ body {
 
     margin-top: 100px;
     position: absolute;
+  }
+
+  #leaderboard {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 180px;
+    padding: 15px;
+    background-color: rgba(255,183,16, .85);
+    color: black;
+    text-shadow: -1px 0 #FDE59B;
+    font: 14px Menlo, monospace;
+    line-height: 1;
+    z-index: 1;
+    h1 { font-weight: normal; font-size: 18px; font-weight: bold; text-align: center }
+    .players {
+      margin-top: 10px;
+      .player {
+        display: block;
+        height: 50px;
+        position: relative;
+        &:after {
+          content: " ";
+          width: 40px;
+          height: 40px;
+          background-image: url('/leaderboard_sprite.png');
+          position: absolute;
+          top: -2px;
+          right: 0;
+        }
+        .name, .score {
+          position: absolute;
+          right: 50px;
+        }
+        .score {
+          top: 0px;
+          font-size: 20px;
+        }
+        .name {
+          top: 24px;
+          font-size: 14px;
+        }
+      }
+    }
+    .empty {
+      text-align: center;
+    }
   }
 }
