@@ -162,10 +162,10 @@ describe "Game", ->
       @game.processPickups([@order])
       expect(@game.playerMessages[1]).toEqual [{notice: "You picked up #{@item.name}"}]
 
-    # it "removes the item from game.items", ->
-    #   expect(@game.items).toEqual [@item]
-    #   @game.processPickups([@order])
-    #   expect(@game.items).toEqual []
+    it "removes the item from game.items", ->
+      expect(@game.items).toEqual [@item]
+      @game.processPickups([@order])
+      expect(@game.items).toEqual []
 
   describe "respawnDeadPlayers", ->
     beforeEach ->
