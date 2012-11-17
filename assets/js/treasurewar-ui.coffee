@@ -117,6 +117,17 @@ $ ->
       p = (players[player.clientId] ?= new Player(ui))
       p.update(player)
 
+    $("#leaderboard").empty()
+    asc_players = _(data.players).sortBy (p) -> p.score * -1
+    for player in asc_players
+      console.log player
+      div = """<div>
+        <h1>#{player.name}</h1>
+        <h2>#{player.score}</h2>
+      </div>
+      """
+      $("#leaderboard").append div
+
   )
 
   socket.on('connect', ->
