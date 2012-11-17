@@ -46,7 +46,7 @@ tickGame = ->
     else
       client.emit 'tick', game.tickPayloadFor(client.id)
 
-setInterval tickGame, 50
+setInterval tickGame, 100
 
 isVisualizer = (socket) ->
   _(visualizers).contains socket.id
