@@ -21,6 +21,17 @@ tileTypes =
     name: 'other'
     frames: [54..56]
 
+healthBar = [
+  35
+  34
+  33
+  32
+  31
+  30
+]
+healthChunk = 100/healthBar.length
+
+
 
 animations = {}
 
@@ -52,6 +63,7 @@ class Player
     @tile = new Tile('p')
     @cnt.addChild @tile.root
 
+
     @baseIndex = @tile.index
 
     @name = new createjs.Text "Fred", "bold 20px Arial", '#0f0'
@@ -59,6 +71,10 @@ class Player
     @name.textBaseline = 'bottom'
     @name.x += 20
     @cnt.addChild @name
+
+    @bar = new createjs.BitmapAnimation(spriteSheet)
+    @bar.gotoAndStop healthBar[healthBar.length-1]
+    @cnt.addChild @bar
 
 
   update: (data) ->
@@ -71,6 +87,10 @@ class Player
     @tile.root.gotoAndStop(index || @index)
     @cnt.x = data.x * 40
     @cnt.y = data.y * 40
+
+    data.health = 100
+
+    @bar.gotoAndStop l = healthBar[Math.floor(data.health / healthChunk)]
 
     @name.text = data.name
 
@@ -175,17 +195,26 @@ class Leaderboard
   constructor: (@el) ->
   update: (players) ->
     asc_players = _(players).sortBy (p) -> p.score * -1
-    el = @el.find(".players")
-    el.empty()
+    list = @el.find(".players")
+    list.empty()
     if asc_players.length == 0
-      el.append """<div class='empty'>No players :(</div>"""
+      list.append """<div class='empty'>No players :(</div>"""
     else
       for p in asc_players
-        el.append """<div class='player'>
-          <div class='name'>#{p.name}</div>
-          <div class='score'>#{p.score}</div>
-        </div>
-        """
+        @makePlayerEl(p).appendTo(list)
+  makePlayerEl: (player) ->
+    $("""<div class='player avatar-#{@avatar(player)}'>
+      <div class='name'>#{player.name}</div>
+      <div class='score'>#{player.score}</div>
+    </div>
+    """)
+  avatar: (player) ->
+    if player.name
+      spriteLength = 5
+      firstCharCode = player.name.charCodeAt(0) or 0
+      firstCharCode % spriteLength
+    else
+      0
 
 $ ->
   ui = new TreasureWarUI
