@@ -4,7 +4,7 @@ end
 
 dep 'server restarted', :template => 'task' do
   run {
-    output = shell?('ps ux | grep -v grep | grep "node .* server.coffee"')
+    output = shell?('ps ux | grep -v grep | grep "node .*server.coffee"')
 
     if output.nil?
       log "`coffee server.coffee` isn't running."
