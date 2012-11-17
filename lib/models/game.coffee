@@ -111,9 +111,12 @@ root.Game = class Game
       try
         player = @findPlayer(drop_order.clientId)
         item = player.dropHeldItem()
-        @items.push item
-        console.log "#{player.name} dropped #{item.name}"
-        @messageClient(player, notice: "You dropped #{item.name}")
+        if item
+          item.position.x = player.position().x
+          item.position.y = player.position().y
+          @items.push item
+          console.log "#{player.name} dropped #{item.name}"
+          @messageClient(player, notice: "You dropped #{item.name}")
       catch exception
         console.log "Error processing drop ", drop_order
 
