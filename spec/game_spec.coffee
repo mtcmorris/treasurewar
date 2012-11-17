@@ -160,7 +160,7 @@ describe "Game", ->
 
     it "sends a message to the player", ->
       @game.processPickups([@order])
-      expect(@game.playerMessages[1]).toEqual [{notice: "You picked up #{@item.type}"}]
+      expect(@game.playerMessages[1]).toEqual [{notice: "You picked up #{@item.name}"}]
 
   describe "respawnDeadPlayers", ->
     beforeEach ->
@@ -276,8 +276,8 @@ describe "Game", ->
       expect(@game.treasures.length).toEqual 2
       t1 = @game.treasures[0]
       t2 = @game.treasures[1]
-      expect(t1.type).toEqual 'treasure'
-      expect(t2.type).toEqual 'treasure'
+      expect(t1.is_treasure).toBeTrue
+      expect(t2.is_treasure).toBeTrue
       #in random locations
       expect(t1.position()).toNotEqual t2.position()
 

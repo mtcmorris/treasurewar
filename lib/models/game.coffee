@@ -79,9 +79,9 @@ root.Game = class Game
       #TODO refactor to support other item types
       player = @findPlayer(order.clientId)
       if item = @getTreasureAtPosition(player.position())
-        console.log "#{player.name} picked up #{item.type} at #{item.position()}"
+        console.log "#{player.name} picked up #{item.name} at #{item.position()}"
         player.pickup(item)
-        @messageClient(player, notice: "You picked up #{item.type}")
+        @messageClient(player, notice: "You picked up #{item.name}")
       else
         @messageClient(player, error: "Nothing to pick up here")
 
