@@ -30,12 +30,12 @@ root.Player = class Player
     return false unless @item_in_hand
     item = @item_in_hand
     @item_in_hand = null
-    if item.type == 'treasure' && @position().x == @stash.x && @position().y == @stash.y
+    if item.is_treasure && @x == @stash.x && @y == @stash.y
       @depositTreasure(item)
     return item
 
   depositTreasure: (item) ->
-    @stash.treasures.push treasure
+    @stash.treasures.push item
 
   isCarryingTreasure: -> @item_in_hand?.type == 'treasure'
 
