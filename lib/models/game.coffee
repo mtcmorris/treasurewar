@@ -155,7 +155,7 @@ root.Game = class Game
   visualizerTickPayload: ->
     {
       players: @players
-      treasures: @treasures
+      items: @items
     }
 
 
@@ -199,7 +199,7 @@ root.Game = class Game
       output += row + "\n"
     output
 
-  playerCanPickupItem: (player, item) -> 
+  playerCanPickupItem: (player, item) ->
     # Right now, only checks are:
     # - is player at item's position
     # - item has no owner
@@ -210,11 +210,11 @@ root.Game = class Game
   getItemAtPosition: (position) ->
     items = _.filter(@items, (item) -> item.position().x == position.x && item.position().y == position.y)
     item = if items.length > 0 then items[0] else null
-    
+
   treasures: ->
     _.filter(@items, (item) -> item.is_treasure == true)
 
-  repopTreasure: -> 
+  repopTreasure: ->
     # repop one treasure per player somewhere random in the dungeon
     until enough_treasure = @treasures().length >= @players.length
       console.log "popping more treasure..."
