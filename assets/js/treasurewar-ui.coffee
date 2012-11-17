@@ -11,6 +11,12 @@ tileTypes =
   't':
     name: 'treasures'
     frames: [36..38]
+  'h':
+    name: 'health'
+    frames: [30..35]
+  's':
+    name: 'stash'
+    frames: [54..56]
   ' ':
     name: 'other'
     frames: [54..56]
@@ -39,6 +45,7 @@ class Tile
 class Player
   constructor: (ui, sprite) ->
     @tile = new Tile(ui.stage, ui.spriteSheet, 'p')
+    @healthBar = new Tile(ui.stage, ui.spriteSheet, 'h')
     @baseIndex = @tile.index
 
   update: (data) ->
@@ -48,6 +55,14 @@ class Player
     if data.carry_treasure
       index += 6
     @tile.draw(data.x, data.y, index)
+
+
+class Stash
+  constructor: (ui, sprite) ->
+    @tile = new Tile(ui.stage, ui.spriteSheet, 'p')
+
+  update: (data, index) ->
+    @tile.draw(data.stash.x, data.stash.y, index + 12)
 
 
 class Treasure
@@ -99,6 +114,7 @@ $ ->
   ui = new TreasureWarUI
   ui.main()
   players = {}
+  stashes = {}
   treasures = {}
 
   socket = io.connect("http://#{location.hostname}:8000")
@@ -116,6 +132,11 @@ $ ->
     for player in data.players
       p = (players[player.clientId] ?= new Player(ui))
       p.update(player)
+
+    for id, p of players
+      s = (stashes[player.clientId] ?= new Stash(ui))
+      s.update(player, p.tile.index)
+
 
     $("#leaderboard").empty()
     asc_players = _(data.players).sortBy (p) -> p.score * -1
