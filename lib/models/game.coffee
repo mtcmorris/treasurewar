@@ -39,7 +39,7 @@ root.Game = class Game
       return {x, y} if @isFloor({y, x})
 
   isFloor: (position) ->
-    @map[position.y][position.x] == ' '
+    @map[position.y][position.x] == 'f'
 
   registerOrder: (order) ->
     console.log "Order received", order
@@ -198,12 +198,12 @@ root.Game = class Game
       output += row + "\n"
     output
 
-  getTreasureAtPosition: (position) -> 
+  getTreasureAtPosition: (position) ->
     # return the treasure object at position or null if none there
     treasures = _.filter(@treasures, (treasure) -> treasure.position().x == position.x && treasure.position().y == position.y)
     treasure = if treasures.length > 0 then treasures[0] else null
 
-  repopTreasure: -> 
+  repopTreasure: ->
     # repop one treasure per player somewhere random in the dungeon
     while @treasures.length < @players.length
       position = @getRandomFloorLocation()
@@ -211,4 +211,4 @@ root.Game = class Game
       if not treasure_already_at_location
         @treasures.push new Treasure(position)
 
-  
+

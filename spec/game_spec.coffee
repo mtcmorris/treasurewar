@@ -3,9 +3,9 @@ describe "Game", ->
   beforeEach ->
     @game = new Game()
     @game.map = [
-      ["W", "W", " "]
-      ["W", " ", " "]
-      ["W", " ", " "]
+      ["W", "W", "f"]
+      ["W", "f", "f"]
+      ["W", "f", "f"]
     ]
     @game.mapX = 3
     @game.mapY = 3
@@ -36,8 +36,8 @@ describe "Game", ->
   describe "validMove", ->
     beforeEach ->
       @game.map = [
-        [" ", "W"],
-        [" ", " "]
+        ["f", "W"],
+        ["f", "f"]
       ]
       @player = new Player(1, x: 0, y: 0)
 
@@ -50,11 +50,11 @@ describe "Game", ->
   describe "visibleTiles", ->
     beforeEach ->
       @game.map = [
-        [" ", "W", " "] # x: 1, y: 0
-        [" ", " ", " "]
-        [" ", " ", " "]
-        [" ", " ", "W"] # x: 2, y: 3
-        [" ", " ", "W"] # x: 2, y: 4 Not visible
+        ["f", "W", "f"] # x: 1, y: 0
+        ["f", "f", "f"]
+        ["f", "f", "f"]
+        ["f", "f", "W"] # x: 2, y: 3
+        ["f", "f", "W"] # x: 2, y: 4 Not visible
       ]
 
     it "should return the visible walls to the north", ->
@@ -72,9 +72,9 @@ describe "Game", ->
   describe "processAttacks", ->
     beforeEach ->
       @game.map = [
-        [" ", "W", " "],
-        [" ", " ", " "],
-        [" ", " ", "W"]
+        ["f", "W", "f"],
+        ["f", "f", "f"],
+        ["f", "f", "W"]
       ]
 
       @player = new Player(1, x: 1, y: 1)
@@ -97,9 +97,9 @@ describe "Game", ->
   describe "processPickups", ->
     beforeEach ->
       @game.map = [
-        [" ", "W", " "],
-        [" ", " ", " "],
-        [" ", " ", "W"]
+        ["f", "W", "f"],
+        ["f", "f", "f"],
+        ["f", "f", "W"]
       ]
 
       @player = new Player(1, x: 1, y: 1)
@@ -140,9 +140,9 @@ describe "Game", ->
   describe "payload", ->
     beforeEach ->
       @game.map = [
-        [" ", "W", " "],
-        [" ", " ", " "],
-        [" ", " ", "W"]
+        ["f", "W", "f"],
+        ["f", "f", "f"],
+        ["f", "f", "W"]
       ]
       @player = new Player(1, x: 1, y: 1)
       @game.players.push @player
@@ -194,9 +194,9 @@ describe "Game", ->
   describe "validAttack", ->
     beforeEach ->
       @game.map = [
-        [" ", "W", " "]
-        [" ", " ", " "]
-        [" ", " ", "W"]
+        ["f", "W", "f"]
+        ["f", "f", "f"]
+        ["f", "f", "W"]
       ]
       @attacker = new Player(1, x: 1, y: 1)
       @attackee = new Player(1, x: 2, y: 0) # NE
