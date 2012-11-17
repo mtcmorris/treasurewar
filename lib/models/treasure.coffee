@@ -1,5 +1,5 @@
 _ = require 'underscore'
-item_properties = require '../mixins/item'
+item_properties = require('../mixins/item').item_properties
 
 root.Treasure = class Treasure
   constructor: (position) ->

@@ -17,11 +17,11 @@ root.Player = class Player
 
   position: -> {@x, @y}
 
-  takeTreasure: (treasure) ->
+  pickup: (item) ->
     if @item_in_hand
       return false
     else
-      @item_in_hand = treasure
+      @item_in_hand = item
       true
 
   depositTreasure: (treasure) -> 
@@ -55,6 +55,4 @@ root.Player = class Player
     @health = 100
     @x = @stash.x
     @y = @stash.y
-
-  pickup: (item) ->
 

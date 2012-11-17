@@ -144,12 +144,12 @@ describe "Game", ->
       @game.players.push @player
       treasure_pos = {x: 1, y: 1}
       @item = new Treasure(treasure_pos)
-      @game.treasures.push @item
+      @game.items.push @item
       @order = new Order(1, "pick up")
       @order.player = @player
 
     it "rejects the order if there is nothing to pick up at player location", ->
-      @game.treasures = []
+      @game.items = []
       @game.processPickups([@order])
       expect(@game.playerMessages[1]).toEqual [{error: "Nothing to pick up here"}]
 
@@ -161,6 +161,11 @@ describe "Game", ->
     it "sends a message to the player", ->
       @game.processPickups([@order])
       expect(@game.playerMessages[1]).toEqual [{notice: "You picked up #{@item.name}"}]
+
+    # it "removes the item from game.items", ->
+    #   expect(@game.items).toEqual [@item]
+    #   @game.processPickups([@order])
+    #   expect(@game.items).toEqual []
 
   describe "respawnDeadPlayers", ->
     beforeEach ->
@@ -253,29 +258,30 @@ describe "Game", ->
       expect(@game.translatePosition(pos, "ne")).toEqual {x: 4, y: 9}
       expect(pos).toEqual {x: 3, y: 10}
 
-  describe "getTreasureAtPosition", ->
-    it "returns the treasure at the specified position, or null if no treasure there", ->
+  describe "playerCanPickupItem(player, item)", ->
+    it "returns true/false about if player can pick up the item", ->
       treasure_pos = {x: 3, y: 10}
-      no_treasure_pos = {x: 1, y: 1}
+      player = new Player 1, treasure_pos
       treasure = new Treasure(treasure_pos)
-      @game.treasures.push treasure
-      expect(@game.getTreasureAtPosition(treasure_pos)).toEqual treasure
-      expect(@game.getTreasureAtPosition(no_treasure_pos)).toEqual null
+      expect(@game.playerCanPickupItem(player, treasure)).toEqual true
+      #move player away from treasure
+      player.x = 100
+      expect(@game.playerCanPickupItem(player, treasure)).toEqual false
 
   describe "repopTreasure", ->
     it "creates one new treasure per player, in a random position", ->
       #no players, no treasure
       @game.players = []
-      expect(@game.treasures.length).toEqual 0
+      expect(@game.treasures().length).toEqual 0
 
       #2 players, 2 treasures
       p1 = new Player(1, {x: 3, y: 4})
       p2 = new Player(2, {x: 1, y: 1})
       @game.players = [p1, p2]
       @game.repopTreasure()
-      expect(@game.treasures.length).toEqual 2
-      t1 = @game.treasures[0]
-      t2 = @game.treasures[1]
+      expect(@game.treasures().length).toEqual 2
+      t1 = @game.treasures()[0]
+      t2 = @game.treasures()[1]
       expect(t1.is_treasure).toBeTrue
       expect(t2.is_treasure).toBeTrue
       #in random locations

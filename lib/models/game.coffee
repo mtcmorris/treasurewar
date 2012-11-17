@@ -12,7 +12,7 @@ root.Game = class Game
     @players = []
     @orders = {}
     @playerMessages = {}
-    @treasures = []
+    @items = []
 
 
   spawnDungeon: (x, y) ->
@@ -34,6 +34,7 @@ root.Game = class Game
   getRandomFloorLocation: ->
     throw("There is no dungeon") if @map is null
     while(true)
+      console.log 'finding random floor location...'
       x = parseInt(Math.random() * @mapX)
       y = parseInt(Math.random() * @mapY)
       return {x, y} if @isFloor({y, x})
@@ -76,12 +77,13 @@ root.Game = class Game
 
   processPickups: (pickup_orders) ->
     for order in pickup_orders
-      #TODO refactor to support other item types
       player = @findPlayer(order.clientId)
-      if item = @getTreasureAtPosition(player.position())
-        console.log "#{player.name} picked up #{item.name} at #{item.position()}"
-        player.pickup(item)
-        @messageClient(player, notice: "You picked up #{item.name}")
+      target_item = @getItemAtPosition(player.position())
+      if target_item && @playerCanPickupItem(player, target_item)
+        console.log "#{player.name} picked up #{target_item.name} at #{target_item.position()}"
+        player.pickup(target_item)
+        @items = _.filter(@items, (item) -> item.id != target_item.id)
+        @messageClient(player, notice: "You picked up #{target_item.name}")
       else
         @messageClient(player, error: "Nothing to pick up here")
 
@@ -95,36 +97,29 @@ root.Game = class Game
     attackedPosition = @translatePosition attack.player.position(), attack.dir
     @findPlayerByPosition attackedPosition
 
-  pickupTreasure: (orders) ->
-    for order in orders
-      player = @findPlayer(order.clientId)
-      if treasure = @getTreasureAtPosition(player.position())
-        player.takeTreasure(treasure)
-        console.log "Treasure acquired by #{player.name}"
-
-  dropTreasure: (orders) ->
-    for order in orders
-      player = @findPlayer(order.clientId)
-      if treasure = @getTreasureAtPosition(player.position())
-        player.takeTreasure(treasure)
-        console.log "Treasure acquired by #{player.name}"
+  processDrops: (orders) ->
+    for dorp_order in orders
+      player = @findPlayer(drop_order.clientId)
+      item = player.dropHeldItem()
+      @items.push item
+      console.log "#{player.name} dropped #{item.name}"
+      @messageClient(player, notice: "You dropped #{item.name}")
 
   tick: ->
     console.log "Tick"
     @playerMessages = {}
 
+    # attach player for each order
     orders = _.values(@orders)
-    _(orders).map (o) =>
-      o.player = @findPlayer(o.clientId)
+    _(orders).map (o) => o.player = @findPlayer(o.clientId)
 
     @processAttacks _.filter(orders, (order) -> order.command == "attack")
-    @pickupTreasure _.filter(orders, (order) -> order.command == "pick up")
-    # @throwTreasure _(messages, (msg) -> msg.command == "throw")
+    @processPickups _.filter(orders, (order) -> order.command == "pick up")
+    @processDrops _.filter(orders, (order) -> order.command == "drop")
     @processMoves _.filter(orders, (order) -> order.command == "move")
     @respawnDeadPlayers()
     @repopTreasure()
     @updateScores()
-
     @orders = {}
 
   respawnDeadPlayers: ->
@@ -204,17 +199,27 @@ root.Game = class Game
       output += row + "\n"
     output
 
-  getTreasureAtPosition: (position) ->
-    # return the treasure object at position or null if none there
-    treasures = _.filter(@treasures, (treasure) -> treasure.position().x == position.x && treasure.position().y == position.y)
-    treasure = if treasures.length > 0 then treasures[0] else null
+  playerCanPickupItem: (player, item) -> 
+    # Right now, only checks are:
+    # - is player at item's position
+    # - item has no owner
+    same_position = player.position().x == item.position().x && player.position().y == item.position().y
+    no_owner = item.owned_by == null
+    can_pick_up = same_position && no_owner
 
-  repopTreasure: ->
+  getItemAtPosition: (position) ->
+    items = _.filter(@items, (item) -> item.position().x == position.x && item.position().y == position.y)
+    item = if items.length > 0 then items[0] else null
+    
+  treasures: ->
+    _.filter(@items, (item) -> item.is_treasure == true)
+
+  repopTreasure: -> 
     # repop one treasure per player somewhere random in the dungeon
-    while @treasures.length < @players.length
+    until enough_treasure = @treasures().length >= @players.length
+      console.log "popping more treasure..."
       position = @getRandomFloorLocation()
-      treasure_already_at_location = @getTreasureAtPosition(position)
+      treasure_already_at_location = @getItemAtPosition(position)?.is_treasure
       if not treasure_already_at_location
-        @treasures.push new Treasure(position)
-
+        @items.push new Treasure(position)
 
