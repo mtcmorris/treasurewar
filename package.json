@@ -9,7 +9,8 @@
     "underscore": "~1",
     "socket.io": "",
     "express":    "~3",
-    "connect-assets": ""
+    "connect-assets": "",
+    "less": ""
   },
 
   "devDependencies": {
