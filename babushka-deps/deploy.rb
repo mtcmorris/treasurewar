@@ -13,6 +13,7 @@ dep 'server restarted', :template => 'task' do
     else
       pid = output.scan(/^\S+\s+(\d+)\s+/).flatten.first
       log_shell "Sending SIGTERM to #{pid}", "kill -s TERM #{pid}"
+      sleep 1
     end
   }
 end
