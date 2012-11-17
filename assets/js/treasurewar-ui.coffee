@@ -74,16 +74,10 @@ class TreasureWarUI
   renderMap: () ->
     return unless @map && @spritesReady
 
-    width = 100
-    height = 100
 
-    for cursorY in [0..height]
-      for cursorX in [0..width]
-        continue if @map.length <= cursorY
-        continue if @map[cursorY].length <= cursorX
-
+    for cursorY in [0..(@map.length - 1)]
+      for cursorX in [0..(@map[cursorY].length - 1)]
         char = @map[cursorY][cursorX]
-
         tile = new Tile char
         @stage.addChild tile.root
         tile.draw cursorX, cursorY
