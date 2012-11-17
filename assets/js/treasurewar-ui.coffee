@@ -205,16 +205,16 @@ $ ->
     for player in data.players
       ui.updatePlayer(player)
 
-
-    for event in data.events
-      if event == "attack"
-        pewIndex = parseInt(Math.random() * 5) + 1
-        window.clips["pew#{pewIndex}"].play()
-      else if event == "kill"
-        # console.log "LOL"
-        window.clips["bugle"].play()
-
     leaderboard.update(data.players)
+
+    if data.events
+      for event in data.events
+        if event == "attack"
+          pewIndex = parseInt(Math.random() * 5) + 1
+          window.clips["pew#{pewIndex}"].play()
+        else if event == "kill"
+          # console.log "LOL"
+          window.clips["bugle"].play()
   )
 
   socket.on('connect', ->
