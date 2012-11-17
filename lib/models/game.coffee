@@ -40,7 +40,7 @@ root.Game = class Game
     while(true)
       x = Math.floor(Math.random() * @mapX)
       y = Math.floor(Math.random() * @mapY)
-      return {x, y} if @isFloor({y, x})
+      return {x, y} if @isFloor({x, y})
 
   isFloor: (position) ->
     @map[position.y][position.x] == 'f'
