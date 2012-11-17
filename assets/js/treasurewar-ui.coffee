@@ -149,7 +149,7 @@ class TreasureWarUI
     else
       scale = scale.y + ', ' + scale.y
 
-    canvas.css("transform-origin", "center top")
+    canvas.css("transform-origin", "left top")
     canvas.css("transform", "scale(#{scale})")
 
 $ ->
@@ -177,6 +177,13 @@ $ ->
       s = (stashes[player.clientId] ?= new Stash(ui))
       s.update(player, p.tile.index)
 
+    for event in data.events
+      if event == "attack"
+        pewIndex = parseInt(Math.random() * 5) + 1
+        window.clips["pew#{pewIndex}"].play()
+      else if event == "kill"
+        # console.log "LOL"
+        window.clips["bugle"].play()
 
     $("#leaderboard").empty()
     asc_players = _(data.players).sortBy (p) -> p.score * -1
@@ -194,4 +201,8 @@ $ ->
     socket.emit("visualizer", {})
   )
 
+  audioClips = ["pew1", "pew2", "pew3", "pew4", "pew5", "bugle"]
+  window.clips = {}
 
+  for clip in audioClips
+    window.clips[clip] = new buzz.sound("/sounds/#{clip}", formats: ["mp3"])

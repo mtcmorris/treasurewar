@@ -8,13 +8,14 @@ root.Game = class Game
   constructor: ->
     @options =
       player_vision_distance: 3
-    
+
     @mapX = 0
     @mapY = 0
     @map = null
     @players = []
     @orders = {}
     @playerMessages = {}
+    @visualizerEvents = []
     @items = []
 
 
@@ -66,23 +67,26 @@ root.Game = class Game
     pos
 
   processAttacks: (attack_orders) ->
-      for attack in attack_orders
-        try
-          attacked = @validAttack(attack)
-          if attacked
-            attacked.health -= 10
-            @messageClient(attack.player, notice: "You attacked #{attacked.name}")
-            @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
-            if attacked.health <= 0
-              attack.player.kills += 1
+    for attack in attack_orders
+      try
+        attacked = @validAttack(attack)
+        if attacked
+          attacked.health -= 10
+          @messageClient(attack.player, notice: "You attacked #{attacked.name}")
+          @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
+          if attacked.health <= 0
+            attack.player.kills += 1
+            @visualizerEvents.push "kill"
           else
-            @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
-        catch exception
-          console.log "Error processing attack: ", attack
+            @visualizerEvents.push "attack"
+        else
+          @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
+      catch exception
+        console.log "Error processing attack: ", attack
 
   processPickups: (pickup_orders) ->
     for order in pickup_orders
-      try 
+      try
         player = @findPlayer(order.clientId)
         target_item = @getItemAtPosition(player.position())
         if target_item && @playerCanPickupItem(player, target_item)
@@ -112,10 +116,11 @@ root.Game = class Game
         @messageClient(player, notice: "You dropped #{item.name}")
       catch exception
         console.log "Error processing drop ", drop_order
-        
+
 
   tick: ->
     @playerMessages = {}
+    @visualizerEvents = []
 
     # attach player for each order
     orders = _.values(@orders)
@@ -139,7 +144,7 @@ root.Game = class Game
 
   processMoves: (moveOrders) ->
     for order in moveOrders
-      try 
+      try
         return unless order.player?
         if @validMove(order.player, order.dir)
           @movePlayer(order.player, order.dir)
@@ -168,6 +173,7 @@ root.Game = class Game
     {
       players: @players
       items: @items
+      events: @visualizerEvents
     }
 
 
@@ -189,7 +195,7 @@ root.Game = class Game
           name: p.name
           treasures: p.stash.treasures
         })
-      when 'items' 
+      when 'items'
         _.filter(@items, (i) ->
           Math.abs(i.position().x - pos.x) <= dist && Math.abs(i.position().y - pos.y) <= dist)
 
@@ -226,7 +232,7 @@ root.Game = class Game
             when "W" then "wall"
             when "f" then "floor"
           visibles.push {x: current_x, y: current_y, type: tile_type}
-  
+
     # add in players, stashes, items
     items = @findNear(find: 'items', pos: pos)
     item_hashes = _.map(items, (item) -> item.anonPayload())
