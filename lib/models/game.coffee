@@ -66,29 +66,33 @@ root.Game = class Game
     pos
 
   processAttacks: (attack_orders) ->
-    for attack in attack_orders
-      attacked = @validAttack(attack)
-      if attacked
-        attacked.health -= 10
-        @messageClient(attack.player, notice: "You attacked #{attacked.name}")
-        @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
-        if attacked.health <= 0
-          attack.player.kills += 1
-      else
-        @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
+      for attack in attack_orders
+        try
+          attacked = @validAttack(attack)
+          if attacked
+            attacked.health -= 10
+            @messageClient(attack.player, notice: "You attacked #{attacked.name}")
+            @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
+            if attacked.health <= 0
+              attack.player.kills += 1
+          else
+            @messageClient(attack.player, error: "Your attack in dir #{attack.dir} where there was no player")
+        catch exception
+          console.log "Error processing attack: ", attack
 
   processPickups: (pickup_orders) ->
     for order in pickup_orders
-      player = @findPlayer(order.clientId)
-      target_item = @getItemAtPosition(player.position())
-      if target_item && @playerCanPickupItem(player, target_item)
-        player.pickup(target_item)
-        @items = _.filter(@items, (item) -> item.id != target_item.id)
-        @messageClient(player, notice: "You picked up #{target_item.name}")
-      else
-        @messageClient(player, error: "Nothing to pick up here")
-
-
+      try 
+        player = @findPlayer(order.clientId)
+        target_item = @getItemAtPosition(player.position())
+        if target_item && @playerCanPickupItem(player, target_item)
+          player.pickup(target_item)
+          @items = _.filter(@items, (item) -> item.id != target_item.id)
+          @messageClient(player, notice: "You picked up #{target_item.name}")
+        else
+          @messageClient(player, error: "Nothing to pick up here")
+      catch exception
+        console.log "Error processing pickup: ", pickup
 
   messageClient: (player, msg) ->
     @playerMessages[player.clientId] ||= []
@@ -99,12 +103,16 @@ root.Game = class Game
     @findPlayerByPosition attackedPosition
 
   processDrops: (orders) ->
-    for dorp_order in orders
-      player = @findPlayer(drop_order.clientId)
-      item = player.dropHeldItem()
-      @items.push item
-      console.log "#{player.name} dropped #{item.name}"
-      @messageClient(player, notice: "You dropped #{item.name}")
+    for drop_order in orders
+      try
+        player = @findPlayer(drop_order.clientId)
+        item = player.dropHeldItem()
+        @items.push item
+        console.log "#{player.name} dropped #{item.name}"
+        @messageClient(player, notice: "You dropped #{item.name}")
+      catch exception
+        console.log "Error processing drop ", drop_order
+        
 
   tick: ->
     @playerMessages = {}
@@ -131,12 +139,16 @@ root.Game = class Game
 
   processMoves: (moveOrders) ->
     for order in moveOrders
-      return unless order.player?
-      if @validMove(order.player, order.dir)
-        @movePlayer(order.player, order.dir)
-        @messageClient(order.player, notice: "You moved #{order.dir}")
-      else
-        @messageClient(order.player, error: "Invalid move dir: #{order.dir}")
+      try 
+        return unless order.player?
+        if @validMove(order.player, order.dir)
+          @movePlayer(order.player, order.dir)
+          @messageClient(order.player, notice: "You moved #{order.dir}")
+        else
+          @messageClient(order.player, error: "Invalid move dir: #{order.dir}")
+      catch exception
+        console.log "Error processing move ", order
+
 
   updateScores: -> player.calcScore() for player in @players
 
