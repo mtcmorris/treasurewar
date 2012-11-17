@@ -1,3 +1,4 @@
+_ = require('underscore')
 require("../lib/models/game")
 describe "Game", ->
   beforeEach ->
@@ -162,10 +163,10 @@ describe "Game", ->
       @game.processPickups([@order])
       expect(@game.playerMessages[1]).toEqual [{notice: "You picked up #{@item.name}"}]
 
-    # it "removes the item from game.items", ->
-    #   expect(@game.items).toEqual [@item]
-    #   @game.processPickups([@order])
-    #   expect(@game.items).toEqual []
+    it "removes the item from game.items", ->
+      expect(@game.items).toEqual [@item]
+      @game.processPickups([@order])
+      expect(@game.items).toEqual []
 
   describe "respawnDeadPlayers", ->
     beforeEach ->
@@ -180,7 +181,7 @@ describe "Game", ->
       expect(@player.position()).toEqual x: 1, y: 1
       expect(@game.findPlayer(1).position()).toEqual x: 1, y: 1
 
-  describe "payload", ->
+  describe "#tickPayloadFor", ->
     beforeEach ->
       @game.map = [
         ["f", "W", "f"],
@@ -189,6 +190,41 @@ describe "Game", ->
       ]
       @player = new Player(1, x: 1, y: 1)
       @game.players.push @player
+      @payload = @game.tickPayloadFor(1)
+
+    it "has messages[]", ->
+      expect(@payload.messages).toEqual []
+
+    it "has info about the player", ->
+      player_info = @payload.you
+      expected_keys = "name,health,score,carrying_treasure,item_in_hand,stash,position"
+      for key in expected_keys.split(',')
+        expect(player_info[key]).toBeDefined()
+
+    it "has tiles", ->
+      expect(@payload.tiles).toBeDefined()
+
+  describe "#visualizerTickPayload", ->
+    beforeEach ->
+      @game.map = [
+        ["f", "W", "f"],
+        ["f", "f", "f"],
+        ["f", "f", "W"]
+      ]
+      @player = new Player(1, x: 1, y: 1)
+      @game.players.push @player
+      @game.tick()
+      @payload = @game.visualizerTickPayload()
+
+    it "has players", ->
+      expect(@payload.players.length).toBeDefined()
+
+    it "has items", ->
+      expect(@payload.items.length).toBeDefined()
+      # some treasure
+      treasures = _.filter @payload.items, (item) -> item.is_treasure == true
+      expect(treasures.length).toBeGreaterThan(0)
+
 
   describe "setName", ->
     beforeEach ->
@@ -230,6 +266,20 @@ describe "Game", ->
         name: @nearby.name
         treasure: @nearby.stash.treasure
       }
+
+  describe "findNearbyItems", ->
+    beforeEach ->
+      @player = new Player(1, x: 1, y: 1)
+      @nearby = new Treasure(@player.position())
+      @far = new Treasure(@player.position())
+      @far.x = @player.position.x + 1000
+      @game.players = [@player]
+      @game.items = [@nearby, @far]
+      @nearby_items = @game.findNearbyItems(@player)
+
+    it "should return nearby items", ->
+      expect(@nearby_items).toContain(@nearby)
+      expect(@nearby_items).not.toContain(@far)
 
   describe "validAttack", ->
     beforeEach ->
