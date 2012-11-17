@@ -158,6 +158,12 @@ root.Game = class Game
       nearby_treasure: []
     }
 
+  visualizerTickPayload: ->
+    {
+      players: @players
+      treasures: @treasures
+    }
+
 
   findPlayer: (clientId) ->
     _.find(@players, (p) -> p.clientId == clientId)
