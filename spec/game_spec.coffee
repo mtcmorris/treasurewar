@@ -94,6 +94,36 @@ describe "Game", ->
       @game.processAttacks([@order])
       expect(@game.playerMessages[1]).toEqual [{notice: 'You attacked unnamed coward'}]
 
+  describe "processPickups", ->
+    beforeEach ->
+      @game.map = [
+        [" ", "W", " "],
+        [" ", " ", " "],
+        [" ", " ", "W"]
+      ]
+
+      @player = new Player(1, x: 1, y: 1)
+      @game.players.push @player
+      treasure_pos = {x: 1, y: 1}
+      @item = new Treasure(treasure_pos)
+      @game.treasures.push @item
+      @order = new Order(1, "pick up")
+      @order.player = @player
+
+    it "rejects the order if there is nothing to pick up at player location", ->
+      @game.treasures = []
+      @game.processPickups([@order])
+      expect(@game.playerMessages[1]).toEqual [{error: "Nothing to pick up here"}]
+
+    it "calls player#pickup() with the item at the player's location", ->
+      spy = spyOn(@player, 'pickup')
+      @game.processPickups([@order])
+      expect(spy).toHaveBeenCalledWith(@item)
+
+    it "sends a message to the player", ->
+      @game.processPickups([@order])
+      expect(@game.playerMessages[1]).toEqual [{notice: "You picked up #{@item.type}"}]
+
   describe "respawnDeadPlayers", ->
     beforeEach ->
       @player = new Player(1, x: 1, y: 1)
@@ -129,7 +159,6 @@ describe "Game", ->
       @game.setName(1, "doug")
       expect(@game.players[0].name).toBe "doug"
       expect(@game.findPlayer(1).name).toBe "doug"
-
 
   describe "findNearbyPlayers", ->
     beforeEach ->
@@ -200,12 +229,10 @@ describe "Game", ->
       #no players, no treasure
       @game.players = []
       expect(@game.treasures.length).toEqual 0
-      @game.repopTreasure()
-      expect(@game.treasures.length).toEqual 0
 
       #2 players, 2 treasures
-      p1 = new Player(1, x: 3, y: 4)
-      p2 = new Player(2, x: 1, y: 1)
+      p1 = new Player(1, {x: 3, y: 4})
+      p2 = new Player(2, {x: 1, y: 1})
       @game.players = [p1, p2]
       @game.repopTreasure()
       expect(@game.treasures.length).toEqual 2
@@ -214,5 +241,5 @@ describe "Game", ->
       expect(t1.type).toEqual 'treasure'
       expect(t2.type).toEqual 'treasure'
       #in random locations
-      expect(t1.position).toNotEqual t2.position
+      expect(t1.position()).toNotEqual t2.position()
 

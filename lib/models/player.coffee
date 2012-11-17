@@ -55,3 +55,6 @@ root.Player = class Player
     @health = 100
     @x = @stash.x
     @y = @stash.y
+
+  pickup: (item) ->
+

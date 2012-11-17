@@ -3,4 +3,4 @@ root.Order = class Order
     @clientId = clientId
     @command = command
     @payload = payload
-    @dir = payload.dir
+    @dir = payload?.dir
