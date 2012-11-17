@@ -53,7 +53,7 @@ class TreasureWarUI
 
   handleImageLoad: (event) =>
     @loaded = @loaded + 1
-    console.log @loaded
+    #console.log @loaded
 
   randomFrame: (frames) ->
     _.shuffle(frames)[0]
@@ -62,13 +62,14 @@ class TreasureWarUI
     s = new Sprites @sprites
     index = @randomFrame tileTypes[char].frames
     s.show index, @stage, pos.x * 40, pos.y * 40
+    @stage.update()
 
   placeFloorTile: (pos) ->
     @randomSprite 'f', pos
 
   renderMap: (@map) ->
-    width = 100
-    height = 100
+    width = 40
+    height = 40
 
     for cursorY in [0..height]
       for cursorX in [0..width]
@@ -78,7 +79,7 @@ class TreasureWarUI
         char = @map[cursorY][cursorX]
 
         tile_name = tileTypes[char].name
-        console.log tile_name
+        # console.log tile_name
 
         pos = { x: cursorX, y: cursorY }
         if tile_name is 'players' or tile_name is 'treasures'
@@ -99,14 +100,22 @@ class TreasureWarUI
 $ ->
   ui = new TreasureWarUI
   ui.main()
+  players = {}
 
   socket = io.connect('http://localhost:8000')
   socket.on('map', (map) ->
-    console.log map
+    # console.log map
     ui.renderMap(map)
   )
   socket.on('world state', (data) ->
     # Render players and things
+    # console.log data
+    if data.players.length > 0
+      player = data.players[0]
+      ui.randomSprite('p', {x: player.x, y: player.y})
+      if (Math.random() < 0.01)
+        console.log player
+
   )
 
   socket.on('connect', ->
