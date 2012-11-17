@@ -3,7 +3,7 @@
 tileTypes =
   'W':
     name: 'walls'
-    frames: [41..43]
+    frames: [41..44]
   'f':
     name: 'floors'
     frames: [47..49]
