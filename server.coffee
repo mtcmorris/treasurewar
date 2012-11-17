@@ -74,8 +74,8 @@ io.sockets.on('connection', (socket) ->
     game.registerOrder(new Order(socket.id, "attack", data)) unless isVisualizer(socket)
   )
 
-  socket.on("throw", (data) ->
-    game.registerOrder(new Order(socket.id, "throw", data)) unless isVisualizer(socket)
+  socket.on("drop", (data) ->
+    game.registerOrder(new Order(socket.id, "drop", data)) unless isVisualizer(socket)
   )
 
   socket.on("pick up", (data) ->
