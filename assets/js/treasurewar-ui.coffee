@@ -96,7 +96,7 @@ $ ->
   ui.main()
   players = {}
 
-  socket = io.connect("http://#{location.hostname}:8000")
+  socket = io.connect('http://localhost:8000')
   socket.on('map', (map) ->
     # console.log map
     ui.renderMap(map)
