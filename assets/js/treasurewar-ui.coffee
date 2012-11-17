@@ -59,6 +59,7 @@ class Player
     @name.textBaseline = 'bottom'
     @cnt.addChild @name
 
+
   update: (data) ->
     index = @baseIndex
     if data.health < 50
@@ -99,9 +100,9 @@ class TreasureWarUI
     @treasures = {}
     @stashes = {}
 
+
   renderMap: () ->
     return unless @map && @spritesReady
-
 
     for cursorY in [0..(@map.length - 1)]
       for cursorX in [0..(@map[cursorY].length - 1)]
@@ -110,24 +111,24 @@ class TreasureWarUI
         @stage.addChild tile.root
         tile.draw cursorX, cursorY
 
+ 
+  addChild: (child) ->
+    @stage.addChild child.root
+    child
+
 
   updateTreasure: (treasure) ->
     # need to remove treasure that have been picked up
-    t = @treasures[treasure.clientId] ||= new Treasure
-    @stage.addChild(t.root) unless t.root.parent
+    t = @treasures[treasure.clientId] ||= @addChild(new Treasure)
     t.update(treasure)
 
 
-  updatePlayer: (player) ->
-    p = @players[player.clientId] ||= new Player
+  updatePlayer: (data) ->
+    p = @players[data.clientId] ||= @addChild(new Player)
+    p.update(data)
 
-    @stage.addChild(p.root) unless p.root.parent
-
-    p.update(player)
-
-    s = (@stashes[player.clientId] ?= new Stash(p))
-    @stage.addChild(s.root) unless s.root.parent
-    s.update(player)
+    s = @stashes[data.clientId] ||= @addChild(new Stash(p))
+    s.update(data)
 
   tick: ->
     if spriteSheet?.complete
@@ -158,11 +159,9 @@ class TreasureWarUI
 
   resize: (canvas) ->
     scale =
-      x: (window.innerWidth - 10) / canvas.width();
-      y: (window.innerHeight - 10) / canvas.height();
+      x: (window.innerWidth - 10) / canvas.width()
+      y: (window.innerHeight - 10) / canvas.height()
 
-    # if scale.x < 1 || scale.y < 1
-    #   scale = '1, 1'
     if scale.x < scale.y
       scale = scale.x + ', ' + scale.x
     else
