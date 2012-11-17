@@ -102,16 +102,14 @@ Event: `attack`
 
 ```
 
-#### Pick up treasure
+#### Pick up item (treasure)
 
-*You cannot pick up treasure if you're already carrying treasure*
+*You cannot pick up treasure if you're already carrying treasure. Stand on top of treasure to pick it up.*
 
 Event: `pick up`
 
 ```json
-{
-  dir: "n"
-}
+{ }
 ```
 
 #### Move
@@ -124,14 +122,12 @@ Event: `move`
 }
 ```
 
-#### Throw treasure
+#### Drop item (treasure)
 
-*You cannot throw treasure if you're not carrying treasure*
+*You cannot drop an item if you're not carrying an item*
 
-Event: `throw`
+Event: `drop`
 
 ```json
-{
-  dir: "n"
-}
+{ }
 ```
