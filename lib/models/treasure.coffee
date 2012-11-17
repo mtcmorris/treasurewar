@@ -10,5 +10,8 @@ root.Treasure = class Treasure
     @y = position.y
     @is_treasure = true
 
+  anonPayload: -> {@x, @y, type: 'treasure', @name}
+
+
 
 

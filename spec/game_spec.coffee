@@ -3,6 +3,7 @@ require("../lib/models/game")
 describe "Game", ->
   beforeEach ->
     @game = new Game()
+    @game.options.player_vision_distance = 2
     @game.map = [
       ["W", "W", "f"]
       ["W", "f", "f"]
@@ -86,7 +87,7 @@ describe "Game", ->
     it "should return true if otherwise a valid move", ->
       expect(@game.validMove @player, "se").toBeTruthy()
 
-  describe "visibleTiles", ->
+  describe "#visibleTiles(position)", ->
     beforeEach ->
       @game.map = [
         ["f", "W", "f"] # x: 1, y: 0
@@ -95,6 +96,8 @@ describe "Game", ->
         ["f", "f", "W"] # x: 2, y: 3
         ["f", "f", "W"] # x: 2, y: 4 Not visible
       ]
+      @treasure_x0y1 = new Treasure(x: 0, y: 1) 
+      @game.items.push @treasure_x0y1
 
     it "should return the visible walls to the north", ->
       tiles = @game.visibleTiles x: 1, y: 1
@@ -107,6 +110,23 @@ describe "Game", ->
     it "should not return tiles outside of the range of 2", ->
       tiles = @game.visibleTiles x: 1, y: 1
       expect(tiles).toNotContain {x: 2, y: 4, type: "wall"}
+
+    it "returns all treasure visible", ->
+      tiles = @game.visibleTiles x: 1, y: 1
+      items = _.filter(tiles, (tile) -> tile.type == 'treasure' )
+      expect(items).toEqual [@treasure_x0y1.anonPayload()]
+
+    it "returns all players visible", ->
+      @player = new Player(1, {x: 1, y: 1})
+      @player2 = new Player(2, {x: 1, y: 2})
+      @game.players = [@player, @player2]
+      tiles = @game.visibleTiles x: 1, y: 1
+      players = _.filter(tiles, (tile) -> tile.type == 'player' )
+      expect(players).toEqual [@player.anonPayload(), @player2.anonPayload()]
+
+    it "returns all stashes visible", ->
+      # TODO refactor stash to object with anonPAyload method, then implement this spec
+
 
   describe "processAttacks", ->
     beforeEach ->
@@ -240,15 +260,15 @@ describe "Game", ->
     beforeEach ->
       @player = new Player(1, x: 1, y: 1)
       @nearby = new Player(1, x: 2, y: 0) # NE
-      @far = new Player(1, x: -2, y: 0)
+      @far = new Player(1, x: @game.options.player_vision_distance + 5, y: 0)
       @game.players = [@player, @nearby, @far]
 
-    it "should return players within one square", ->
+    it "should return players within player_vision_distance", ->
       expect(@game.findNearbyPlayers(@player)).toEqual [@nearby]
 
-    it "should not return players players within one square", ->
-      @nearby.y = 4
-      @nearby.x = 0
+    it "should not return players farther than vision_distance", ->
+      @nearby.y = 50
+      @nearby.x = 30
       expect(@game.findNearbyPlayers(@player)).toEqual []
 
   describe "findNearbyStashes", ->
