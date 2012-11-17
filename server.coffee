@@ -1,12 +1,29 @@
 sys = require('sys')
 require('./lib/models/game')
 require('./lib/models/order')
+require('jade')
 _ = require('underscore')
+express = require('express')
+app = express()
+server = require('http').createServer(app)
 
 #----------------------------------------
 # Config Settings
 SERVER_PORT = 8000
 #----------------------------------------
+
+server.listen(SERVER_PORT)
+
+app.configure( ->
+  app.set("view options", { layout: false, pretty: true })
+  app.use(express.favicon())
+  app.use(express.static(__dirname + '/public'))
+)
+
+# Server config:
+app.get('/', (req, res) ->
+  res.render(__dirname + '/views/index.jade')
+)
 
 game = new Game()
 game.spawnDungeon(100, 100)
@@ -14,7 +31,7 @@ sys.puts game.mapToString()
 
 visualizers = []
 
-io = require('socket.io').listen(SERVER_PORT)
+io = require('socket.io').listen(server)
 
 tickGame = ->
   # console.log "Game tick"
