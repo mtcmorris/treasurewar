@@ -31,14 +31,13 @@ root.Player = class Player
   # Also returns false if dropping the item consumes it,
   # i.e. it should be not placed on the map.
   dropHeldItem: ->
-    return false unless @item_in_hand
-    item = @item_in_hand
-    @item_in_hand = null
-    if item.is_treasure && @x == @stash.x && @y == @stash.y
-      @depositTreasure(item)
-      return false
+    return {dropped_item: null} unless @item_in_hand
+    [dropped_item, @item_in_hand] = [@item_in_hand, null]
+    if dropped_item.is_treasure && @x == @stash.x && @y == @stash.y
+      @depositTreasure(dropped_item)
+      return {dropped_item, did_deposit: true}
     else
-      return true
+      return {dropped_item}
 
   depositTreasure: (item) ->
     @stash.treasures.push item

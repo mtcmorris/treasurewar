@@ -188,6 +188,69 @@ describe "Game", ->
       @game.processPickups([@order])
       expect(@game.items).toEqual []
 
+  describe "processDrops", ->
+    beforeEach ->
+      @player = new Player(1, x: 1, y: 1)
+      @stash_pos = @player.stash.position()
+
+      treasure_pos = {x: 1, y: 1}
+      @treasure = new Treasure(treasure_pos)
+
+      @game.players.push @player
+      @game.items.push @treasure
+
+
+    describe 'when holding an item', ->
+      beforeEach ->
+        @player.item_in_hand = @treasure
+      describe 'when a player is not on his stash', ->
+        beforeEach ->
+          @player.x = @stash_pos.x + 10
+        beforeEach ->
+          @order = new Order(@player.clientId, "drop")
+          @order.player = @player
+          @game.processDrops([@order])
+          
+        it 'puts the item back in play', ->
+          expect(@game.items).toContain @treasure
+        it 'tells the player they dropped the item', ->
+          notice = "You dropped #{@treasure.name} onto the map"
+          expect(@game.playerMessages[@player.clientId]).toContain {notice}
+
+      describe 'when a player is on his stash', ->
+        beforeEach ->
+          @player.x = @player.stash.x
+          @player.y = @player.stash.y
+        describe 'when item is treasure', ->
+          beforeEach ->
+            @treasure.is_treasure = true
+          beforeEach ->
+            @deposit_spy = spyOn(@player, 'depositTreasure').andCallThrough()
+          beforeEach ->
+            @order = new Order(@player.clientId, "drop")
+            @order.player = @player
+            @game.processDrops([@order])
+
+          it 'calls player#depositTreasure', ->
+            expect(@deposit_spy).toHaveBeenCalled()
+
+          it 'removes the treasure from play', ->
+            expect(@game.items).not.toContain(@treasure)
+
+          it 'tells the player they deposited treasure', ->
+            notice = "You deposited #{@treasure.name} into your stash"
+            expect(@game.playerMessages[@player.clientId]).toContain {notice}
+
+    describe 'when not holding an item', ->
+      describe 'when a player is on his stash', ->
+        it 'does not call depositTreasure (this is us covering our ass)', ->
+          @player.item_in_hand = null
+          @order = new Order(@player.clientId, "drop")
+          @order.player = @player
+          depositTreasure_spy = spyOn(@player, 'depositTreasure')
+          @game.processDrops([@order])
+          expect(depositTreasure_spy).not.toHaveBeenCalled()
+
   describe "respawnDeadPlayers", ->
     beforeEach ->
       @player = new Player(1, x: 1, y: 1)

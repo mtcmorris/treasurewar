@@ -66,8 +66,9 @@ describe "Player", ->
         @deposit_spy = spyOn(@player, 'depositTreasure')
         @drop_result = @player.dropHeldItem()
 
-      it 'returns false', ->
-        expect(@drop_result).toEqual false
+      it 'tells us it dropped the item and deposited it', ->
+        expect(@drop_result.did_deposit).toEqual true
+        expect(@drop_result.dropped_item).toEqual @item
 
       it 'deposits treasure', ->
         expect(@deposit_spy).toHaveBeenCalledWith(@item)
@@ -80,10 +81,12 @@ describe "Player", ->
         @player.y = @player.stash.y + 10
         @drop_result = @player.dropHeldItem()
 
-      it 'returns true', ->
-        expect(@drop_result).toEqual true
+      it 'tells us it dropped the item and it did not deposit', ->
+        expect(@drop_result.did_deposit).toBeUndefined()
+        expect(@drop_result.dropped_item).toEqual @item
 
     describe 'when holding nothing', ->
-      it 'returns false', ->
+      it 'tells us it didnt drop anything', ->
         @player.item_in_hand = null
-        expect(@player.dropHeldItem()).toEqual false
+        @drop_result = @player.dropHeldItem()
+        expect(@drop_result.dropped_item).toEqual null

@@ -110,15 +110,20 @@ root.Game = class Game
     for drop_order in orders
       try
         player = @findPlayer(drop_order.clientId)
-        item = player.dropHeldItem()
-        if item
-          item.position.x = player.position().x
-          item.position.y = player.position().y
-          @items.push item
-          console.log "#{player.name} dropped #{item.name} onto the map"
-          @messageClient(player, notice: "You dropped #{item.name} onto the map")
+        drop_result = player.dropHeldItem()
+        if dropped_item = drop_result.dropped_item
+          if drop_result.did_deposit
+            @items = _(@items).without(dropped_item)
+            @messageClient(player, notice: "You deposited #{dropped_item.name} into your stash")
+          else
+            dropped_item.position.x = player.position().x
+            dropped_item.position.y = player.position().y
+            @items.push dropped_item
+            @messageClient(player, notice: "You dropped #{dropped_item.name} onto the map")
       catch exception
         console.log "Error processing drop ", drop_order
+        console.log exception
+        console.log exception.stack
 
 
   tick: ->
