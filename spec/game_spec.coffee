@@ -1,3 +1,4 @@
+_ = require('underscore')
 require("../lib/models/game")
 describe "Game", ->
   beforeEach ->
@@ -215,8 +216,15 @@ describe "Game", ->
       @game.tick()
       @payload = @game.visualizerTickPayload()
 
-    # it "has players", ->
-    #   expect(@payload.players).toEqual []
+    it "has players", ->
+      expect(@payload.players.length).toBeDefined()
+
+    it "has items", ->
+      expect(@payload.items.length).toBeDefined()
+      # some treasure
+      treasures = _.filter @payload.items, (item) -> item.is_treasure == true
+      expect(treasures.length).toBeGreaterThan(0)
+
 
 
   describe "setName", ->
