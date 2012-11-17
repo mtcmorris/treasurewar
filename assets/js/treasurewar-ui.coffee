@@ -176,17 +176,26 @@ class Leaderboard
   constructor: (@el) ->
   update: (players) ->
     asc_players = _(players).sortBy (p) -> p.score * -1
-    el = @el.find(".players")
-    el.empty()
+    list = @el.find(".players")
+    list.empty()
     if asc_players.length == 0
-      el.append """<div class='empty'>No players :(</div>"""
+      list.append """<div class='empty'>No players :(</div>"""
     else
       for p in asc_players
-        el.append """<div class='player'>
-          <div class='name'>#{p.name}</div>
-          <div class='score'>#{p.score}</div>
-        </div>
-        """
+        @makePlayerEl(p).appendTo(list)
+  makePlayerEl: (player) ->
+    $("""<div class='player avatar-#{@avatar(player)}'>
+      <div class='name'>#{player.name}</div>
+      <div class='score'>#{player.score}</div>
+    </div>
+    """)
+  avatar: (player) ->
+    if player.name
+      spriteLength = 5
+      firstCharCode = player.name.charCodeAt(0) or 0
+      firstCharCode % spriteLength
+    else
+      0
 
 $ ->
   ui = new TreasureWarUI
