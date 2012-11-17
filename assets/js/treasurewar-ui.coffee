@@ -21,6 +21,17 @@ tileTypes =
     name: 'other'
     frames: [54..56]
 
+healthBar = [
+  35
+  34
+  33
+  32
+  31
+  30
+]
+healthChunk = 100/healthBar.length
+
+
 
 animations = {}
 
@@ -52,6 +63,7 @@ class Player
     @tile = new Tile('p')
     @cnt.addChild @tile.root
 
+
     @baseIndex = @tile.index
 
     @name = new createjs.Text "Fred", "bold 16px Arial", '#0f0'
@@ -60,6 +72,10 @@ class Player
     @name.maxWidth = 80
     @name.x += 20
     @cnt.addChild @name
+
+    @bar = new createjs.BitmapAnimation(spriteSheet)
+    @bar.gotoAndStop healthBar[healthBar.length-1]
+    @cnt.addChild @bar
 
 
   update: (data) ->
@@ -72,6 +88,10 @@ class Player
     @tile.root.gotoAndStop(index || @index)
     @cnt.x = data.x * 40
     @cnt.y = data.y * 40
+
+    data.health = 100
+
+    @bar.gotoAndStop l = healthBar[Math.floor(data.health / healthChunk)]
 
     @name.text = data.name
 
