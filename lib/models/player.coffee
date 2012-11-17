@@ -59,6 +59,7 @@ root.Player = class Player
     score: @score
     item_in_hand: @item_in_hand
     carrying_treasure: @isCarryingTreasure()
+    type: 'player'
     position: @position()
 
   respawn: ->
