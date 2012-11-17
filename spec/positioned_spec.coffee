@@ -3,7 +3,6 @@ positioned_properties = require("../lib/mixins/positioned").positioned_propertie
 
 describe "Positioned mixin", ->
   beforeEach ->
-    console.log "props", positioned_properties
     @positioned = _.extend {}, positioned_properties
 
   describe '#position', ->

@@ -180,7 +180,7 @@ describe "Game", ->
       expect(@player.position()).toEqual x: 1, y: 1
       expect(@game.findPlayer(1).position()).toEqual x: 1, y: 1
 
-  describe "payload", ->
+  describe "#tickPayloadFor", ->
     beforeEach ->
       @game.map = [
         ["f", "W", "f"],
@@ -189,9 +189,35 @@ describe "Game", ->
       ]
       @player = new Player(1, x: 1, y: 1)
       @game.players.push @player
+      @payload = @game.tickPayloadFor(1)
 
-    it "should contain all the player info", ->
-      payload = @game.tickPayloadFor(1)
+    it "has messages[]", ->
+      expect(@payload.messages).toEqual []
+
+    it "has info about the player", ->
+      player_info = @payload.you
+      expected_keys = "name,health,score,carrying_treasure,item_in_hand,stash,position"
+      for key in expected_keys.split(',')
+        expect(player_info[key]).toBeDefined()
+
+    it "has tiles", ->
+      expect(@payload.tiles).toBeDefined()
+
+  describe "#visualizerTickPayload", ->
+    beforeEach ->
+      @game.map = [
+        ["f", "W", "f"],
+        ["f", "f", "f"],
+        ["f", "f", "W"]
+      ]
+      @player = new Player(1, x: 1, y: 1)
+      @game.players.push @player
+      @game.tick()
+      @payload = @game.visualizerTickPayload()
+
+    # it "has players", ->
+    #   expect(@payload.players).toEqual []
+
 
   describe "setName", ->
     beforeEach ->
