@@ -55,7 +55,6 @@ class TreasureWarUI
   randomSprite: (char, pos) ->
     s = new Sprites @sprites
     index = @randomFrame tileTypes[char].frames
-    console.log "randomFrame", index, pos.x, pos.y
     s.show index, @stage, pos.x * 40, pos.y * 40
     @stage.update()
 
