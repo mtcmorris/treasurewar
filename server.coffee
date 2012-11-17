@@ -6,6 +6,7 @@ _ = require('underscore')
 express = require('express')
 app = express()
 server = require('http').createServer(app)
+assets = require('connect-assets')
 
 #----------------------------------------
 # Config Settings
@@ -17,8 +18,10 @@ server.listen(SERVER_PORT)
 app.configure( ->
   app.set("view options", { layout: false, pretty: true })
   app.use(express.favicon())
+  app.use(assets())
   app.use(express.static(__dirname + '/public'))
 )
+
 
 # Server config:
 app.get('/', (req, res) ->

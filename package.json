@@ -8,7 +8,8 @@
   "dependencies": {
     "underscore": "~1",
     "socket.io": "",
-    "express":    "~3"
+    "express":    "~3",
+    "connect-assets": ""
   },
 
   "devDependencies": {

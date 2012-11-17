@@ -6,10 +6,10 @@ html
 
     script(src='/socket.io/socket.io.js')
 
-    script(src="/javascripts/vendor/underscore.js")
-    script(src="/javascripts/vendor/jquery.js")
-    script(src="/javascripts/vendor/easel.js")
-    script(src="/javascripts/treasurewar-ui.js")
+    != js("vendor/underscore")
+    != js("vendor/jquery")
+    != js("vendor/easel")
+    != js('treasurewar-ui')
 
   body
     block content
