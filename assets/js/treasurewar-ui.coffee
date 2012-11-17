@@ -45,12 +45,12 @@ class Tile
 
 
 class Player
+
   constructor: ->
     @root = @cnt = new createjs.Container
     @tile = new Tile('p')
     @cnt.addChild @tile.root
     @baseIndex = @tile.index
-
 
   update: (data) ->
     index = @baseIndex
@@ -62,14 +62,17 @@ class Player
 
 
 class Stash
-  constructor: (ui, sprite) ->
-    @tile = new Tile(ui.stage, ui.spriteSheet, 'p')
 
-  update: (data, index) ->
-    @tile.draw(data.stash.x, data.stash.y, index + 12)
+  constructor: (@player) ->
+    @tile = new Tile('p')
+    @root = @tile.root
+
+  update: (data)->
+    @tile.draw(data.stash.x, data.stash.y, @player.baseIndex + 12)
 
 
 class Treasure
+
   constructor: ->
     @tile = new Tile('t')
     @root = @tile.root
@@ -82,6 +85,7 @@ class TreasureWarUI
   constructor: ->
     @players = {}
     @treasures = {}
+    @stashes = {}
 
   renderMap: () ->
     return unless @map && @spritesReady
@@ -109,6 +113,9 @@ class TreasureWarUI
 
     p.update(player)
 
+    s = (@stashes[player.clientId] ?= new Stash(p))
+    @stage.addChild(s.root) unless s.root.parent
+    s.update(player)
 
   tick: ->
     if spriteSheet?.complete
@@ -155,9 +162,6 @@ class TreasureWarUI
 $ ->
   ui = new TreasureWarUI
   ui.main()
-  players = {}
-  stashes = {}
-  treasures = {}
   ui.fullscreenify()
 
   socket = io.connect("http://#{location.hostname}:8000")
@@ -173,9 +177,6 @@ $ ->
     for player in data.players
       ui.updatePlayer(player)
 
-    for id, p of players
-      s = (stashes[player.clientId] ?= new Stash(ui))
-      s.update(player, p.tile.index)
 
     for event in data.events
       if event == "attack"
