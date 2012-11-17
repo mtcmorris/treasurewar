@@ -212,7 +212,7 @@ class Leaderboard
     """)
   avatar: (player) ->
     if player.name
-      spriteLength = 5
+      spriteLength = 6
       firstCharCode = player.name.charCodeAt(0) or 0
       firstCharCode % spriteLength
     else
