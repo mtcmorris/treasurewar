@@ -3,31 +3,25 @@
 tileTypes =
   'W':
     name: 'walls'
-    frames: [41..44]
+    frames: [42..45]
   'f':
     name: 'floors'
-    frames: [47..49]
+    frames: [48..50]
   'p':
     name: 'players'
-    frames: [-1..4]
+    frames: [0..5]
   't':
     name: 'treasures'
-    frames: [35..37]
+    frames: [36..38]
   ' ':
     name: 'other'
-    frames: [53..55]
+    frames: [54..57]
 
 animations = {}
 
 for char, data of tileTypes
   animations[char] = frames: data.frames
 
-
-getMap = ->
-  done = null
-  $.get('http://127.0.0.1:1337').done (data) =>
-    done = data
-  JSON.parse done
 
 class Sprites
 
@@ -41,7 +35,7 @@ class Sprites
   show: (index, stage, x, y) ->
 
     stage.addChild @sprite
-    @sprite.gotoAndPlay index
+    @sprite.gotoAndStop index
     @sprite.x = x
     @sprite.y = y
 
@@ -61,6 +55,7 @@ class TreasureWarUI
   randomSprite: (char, pos) ->
     s = new Sprites @sprites
     index = @randomFrame tileTypes[char].frames
+    console.log "randomFrame", index, pos.x, pos.y
     s.show index, @stage, pos.x * 40, pos.y * 40
 
   placeFloorTile: (pos) ->
