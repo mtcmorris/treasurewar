@@ -54,15 +54,11 @@ class Player
 
     @baseIndex = @tile.index
 
-<<<<<<< HEAD
-=======
     @name = new createjs.Text "Fred", "bold 24px Arial", '#fff'
     @name.textAlign = 'center'
     @name.textBaseline = 'bottom'
     @cnt.addChild @name
 
-
->>>>>>> 82fff21a53efc994c030a10be6fc69a02d931164
   update: (data) ->
     index = @baseIndex
     if data.health < 50
