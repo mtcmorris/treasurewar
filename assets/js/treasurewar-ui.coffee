@@ -81,7 +81,13 @@ $ ->
   )
 
   socket.on('world state', (data) ->
-    # Render players and things
+    for item in data.items
+      tile = new Tile ui.spriteSheet, 't', item.x, item.y
+      ui.stage.addChild tile.tile
+
+    for player in data.players
+      tile = new Tile ui.spriteSheet, 'p', player.x, player.y
+      ui.stage.addChild tile.tile
   )
 
   socket.on('connect', ->
