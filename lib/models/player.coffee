@@ -34,7 +34,7 @@ root.Player = class Player
     else
       return false
 
-  depositTreasure: (treasure) -> 
+  depositTreasure: (treasure) ->
     if @item_in_hand.type == 'treasure'
       @stash.treasures.push treasure
       @item_in_hand = null
@@ -51,7 +51,7 @@ root.Player = class Player
     position: @position()
 
   calcScore: ->
-    @score = @kills + @stash.treasure * 10
+    @score = @kills + @stash.treasures.length * 10
 
   anonPayload: ->
     name: @name

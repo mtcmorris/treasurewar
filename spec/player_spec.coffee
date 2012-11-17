@@ -24,6 +24,15 @@ describe "Player", ->
 
       }
 
+  describe "calcScore", ->
+    beforeEach ->
+      @player.stash.treasures = [new Treasure(@player.position()), new Treasure(@player.position())]
+      @player.kills = 3
+      @player.calcScore()
+
+    it "should have a score with kills + treasure", ->
+      expect(@player.score).toEqual 23
+
   describe "#pickup(item)", ->
     beforeEach ->
       @item = new Treasure(@player.position())
