@@ -91,6 +91,8 @@ class Player
     data.health = 100
 
     @bar.gotoAndStop l = healthBar[Math.floor(data.health / healthChunk)]
+    @bar.scaleX = 1.5
+    @bar.scaleY = 1.5
 
     @name.text = data.name
 
