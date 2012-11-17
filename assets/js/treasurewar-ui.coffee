@@ -135,7 +135,7 @@ class TreasureWarUI
     else
       scale = scale.y + ', ' + scale.y
 
-    canvas.css("transform-origin", "center top")
+    canvas.css("transform-origin", "left top")
     canvas.css("transform", "scale(#{scale})")
 
 $ ->
