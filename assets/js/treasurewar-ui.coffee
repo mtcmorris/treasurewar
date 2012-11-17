@@ -44,6 +44,14 @@ class Player
     @tile.draw(data.x, data.y)
 
 
+class Treasure
+  constructor: (ui, sprite) ->
+    @tile = new Tile(ui.stage, ui.spriteSheet, 't')
+
+  update: (data) ->
+    @tile.draw(data.x, data.y)
+
+
 class TreasureWarUI
   renderMap: () ->
     return unless @map && @spritesReady
@@ -85,6 +93,7 @@ $ ->
   ui = new TreasureWarUI
   ui.main()
   players = {}
+  treasures = {}
 
   socket = io.connect("http://#{location.hostname}:8000")
   socket.on('map', (map) ->
@@ -93,12 +102,12 @@ $ ->
   )
 
   socket.on('world state', (data) ->
-    for item in data.items
-      tile = new Tile ui.stage, ui.spriteSheet, 't'
-      tile.draw item.x, item.y
+    for treasure in data.items
+      # need to remove treasure that have been picked up
+      t = (treasures[treasure.clientId] ?= new Treasure(ui))
+      t.update(treasure)
 
     for player in data.players
-      # add new or fetch existing player
       p = (players[player.clientId] ?= new Player(ui))
       p.update(player)
 
