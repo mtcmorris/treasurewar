@@ -22,10 +22,8 @@ animations = {}
 for char, data of tileTypes
   animations[char] = frames: data.frames
 
-
 # its a global, live with it
 spriteSheet = null
-
 
 class Tile
   constructor: (char) ->
@@ -116,10 +114,34 @@ class TreasureWarUI
     @stage = new createjs.Stage("TreasureWar")
     createjs.Ticker.addListener @stage
 
+  fullscreenify: ->
+    canvas = $('#TreasureWar')
+
+    $(window).on 'resize', =>
+      @resize(canvas)
+      false
+
+    @resize(canvas)
+
+  resize: (canvas) ->
+    scale = 
+      x: (window.innerWidth - 10) / canvas.width();
+      y: (window.innerHeight - 10) / canvas.height();
+
+    # if scale.x < 1 || scale.y < 1
+    #   scale = '1, 1'
+    if scale.x < scale.y
+      scale = scale.x + ', ' + scale.x
+    else
+      scale = scale.y + ', ' + scale.y
+
+    canvas.css("transform-origin", "center top")
+    canvas.css("transform", "scale(#{scale})")
 
 $ ->
   ui = new TreasureWarUI
   ui.main()
+  ui.fullscreenify()
 
   socket = io.connect("http://#{location.hostname}:8000")
   socket.on('map', (map) ->
@@ -150,3 +172,5 @@ $ ->
   socket.on('connect', ->
     socket.emit("visualizer", {})
   )
+
+
