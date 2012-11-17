@@ -54,10 +54,9 @@ class Player
 
     @baseIndex = @tile.index
 
-    @name = new createjs.Text "Fred", "bold 16px Arial", '#0f0'
+    @name = new createjs.Text "Fred", "bold 20px Arial", '#0f0'
     @name.textAlign = 'center'
     @name.textBaseline = 'bottom'
-    @name.maxWidth = 80
     @name.x += 20
     @cnt.addChild @name
 
