@@ -190,9 +190,6 @@ describe "Game", ->
       @player = new Player(1, x: 1, y: 1)
       @game.players.push @player
 
-    it "should contain all the player info", ->
-      payload = @game.tickPayloadFor(1)
-
   describe "setName", ->
     beforeEach ->
       @player = new Player(1, x: 1, y: 1)
