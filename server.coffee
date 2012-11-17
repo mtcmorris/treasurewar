@@ -29,7 +29,7 @@ app.get('/', (req, res) ->
 )
 
 game = new Game()
-game.spawnDungeon(40, 40)
+game.spawnDungeon(40, 30)
 sys.puts game.mapToString()
 
 visualizers = []
@@ -47,7 +47,7 @@ tickGame = ->
       client.emit 'tick', game.tickPayloadFor(client.id)
 
   io.sockets.emit 'message', { message: "Hello everyone!" }
-setInterval tickGame, 1000
+setInterval tickGame, 50
 
 isVisualizer = (socket) ->
   _(visualizers).contains socket.id
