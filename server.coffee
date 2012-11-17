@@ -47,7 +47,7 @@ tickGame = ->
       client.emit 'tick', game.tickPayloadFor(client.id)
 
   io.sockets.emit 'message', { message: "Hello everyone!" }
-setInterval tickGame, 10
+setInterval tickGame, 1000
 
 isVisualizer = (socket) ->
   _(visualizers).contains socket.id
