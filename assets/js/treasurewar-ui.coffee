@@ -175,10 +175,27 @@ class TreasureWarUI
     canvas.css("transform-origin", "left top")
     canvas.css("transform", "scale(#{scale})")
 
+class Leaderboard
+  constructor: (@el) ->
+  update: (players) ->
+    asc_players = _(players).sortBy (p) -> p.score * -1
+    el = @el.find(".players")
+    el.empty()
+    if asc_players.length == 0
+      el.append """<div class='empty'>No players :(</div>"""
+    else
+      for p in asc_players
+        el.append """<div class='player'>
+          <div class='name'>#{p.name}</div>
+          <div class='score'>#{p.score}</div>
+        </div>
+        """
+
 $ ->
   ui = new TreasureWarUI
   ui.main()
   ui.fullscreenify()
+  leaderboard = new Leaderboard($("#leaderboard"))
 
   socket = io.connect("http://#{location.hostname}:8000")
   socket.on('map', (map) ->
@@ -202,16 +219,7 @@ $ ->
         # console.log "LOL"
         window.clips["bugle"].play()
 
-    $("#leaderboard").empty()
-    asc_players = _(data.players).sortBy (p) -> p.score * -1
-    for player in asc_players
-      div = """<div>
-        <h1>#{player.name}</h1>
-        <h2>#{player.score}</h2>
-      </div>
-      """
-      $("#leaderboard").append div
-
+    leaderboard.update(data.players)
   )
 
   socket.on('connect', ->
