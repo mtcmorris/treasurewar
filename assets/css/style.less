@@ -32,25 +32,29 @@ body {
     top: 0;
     left: 0;
     width: 240px;
-    padding: 15px 15px 20px 15px;
+    padding: 15px 15px 10px 15px;
     background-color: rgba(255,255,255, .95);
     color: black;
-    font: 14px Menlo, monospace;
+    font: 18px Menlo, monospace;
     line-height: 1;
     z-index: 1;
     border-bottom-right-radius: 4px;
     h1 {
-      font-weight: normal;
       font-size: 22px;
       font-weight: bold;
       text-transform: uppercase;
+      border-bottom: 1px solid #333;
+      margin-left: -20px;
+      margin-right: -20px;
       margin-top: -2px;
-      span.yaar { font-size: 42px; line-height: 17px; position: relative; top: 5px; margin-right: -5px; }
-      span.space { margin-left: -4px; }
+      padding-bottom: 10px;
+      letter-spacing: 2px;
+      text-align: center;
+      margin-bottom: 15px;
     }
     .players {
-      margin-top: 10px;
       .player {
+        margin-top: 5px;
         display: block;
         height: 50px;
         position: relative;
@@ -83,8 +87,8 @@ body {
       }
     }
     .empty {
-      padding-top: 5px;
       text-align: center;
+      padding-bottom: 10px;
     }
   }
 }
