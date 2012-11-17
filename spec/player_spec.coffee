@@ -17,6 +17,7 @@ describe "Player", ->
           x: 3
           y: 4
           treasures: []
+          position: @player.stash.position #ghetto
         position:
           x: 3
           y: 4

@@ -1,3 +1,5 @@
+_ = require 'underscore'
+positioned_properties = require('../mixins/positioned').positioned_properties
 
 root.Player = class Player
   constructor: (clientId, position) ->
@@ -14,8 +16,8 @@ root.Player = class Player
       y: position.y
       treasures: []
     }
-
-  position: -> {@x, @y}
+    _.extend(@stash, positioned_properties)
+    _.extend(this, positioned_properties)
 
   pickup: (item) ->
     if @item_in_hand
