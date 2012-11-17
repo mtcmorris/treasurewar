@@ -15,20 +15,24 @@ tileTypes =
     name: 'other'
     frames: [54..56]
 
+
 animations = {}
+
 
 for char, data of tileTypes
   animations[char] = frames: data.frames
 
 
-class Tile
+# its a global, live with it
+spriteSheet = null
 
-  constructor: (@stage, spriteSheet, char) ->
-    @tile = new createjs.BitmapAnimation(spriteSheet)
+
+class Tile
+  constructor: (char) ->
+    @root = @tile = new createjs.BitmapAnimation(spriteSheet)
 
     frames = tileTypes[char].frames
     @index = _.shuffle(frames)[0]
-    @stage.addChild @tile
 
   draw: (x, y, index) ->
     @tile.gotoAndStop(index || @index)
@@ -37,9 +41,12 @@ class Tile
 
 
 class Player
-  constructor: (ui, sprite) ->
-    @tile = new Tile(ui.stage, ui.spriteSheet, 'p')
+  constructor: ->
+    @root = @cnt = new createjs.Container
+    @tile = new Tile('p')
+    @cnt.addChild @tile.root
     @baseIndex = @tile.index
+
 
   update: (data) ->
     index = @baseIndex
@@ -51,14 +58,19 @@ class Player
 
 
 class Treasure
-  constructor: (ui, sprite) ->
-    @tile = new Tile(ui.stage, ui.spriteSheet, 't')
+  constructor: ->
+    @tile = new Tile('t')
+    @root = @tile.root
 
   update: (data) ->
     @tile.draw(data.x, data.y)
 
 
 class TreasureWarUI
+  constructor: ->
+    @players = {}
+    @treasures = {}
+    
   renderMap: () ->
     return unless @map && @spritesReady
 
@@ -72,19 +84,35 @@ class TreasureWarUI
 
         char = @map[cursorY][cursorX]
 
-        tile = new Tile @stage, @spriteSheet, char
+        tile = new Tile char
+        @stage.addChild tile.root
         tile.draw cursorX, cursorY
 
 
+  updateTreasure: (treasure) ->
+    # need to remove treasure that have been picked up
+    t = @treasures[treasure.clientId] ||= new Treasure
+    @stage.addChild(t.root) unless t.root.parent
+    t.update(treasure)
+
+
+  updatePlayer: (player) ->
+    p = @players[player.clientId] ||= new Player
+
+    @stage.addChild(p.root) unless p.root.parent
+
+    p.update(player)
+
+
   tick: ->
-    if @spriteSheet.complete
+    if spriteSheet?.complete
       createjs.Ticker.removeListener @
       @spritesReady = true
       @renderMap()
 
 
   main: ->
-    @spriteSheet = new createjs.SpriteSheet
+    spriteSheet = new createjs.SpriteSheet
       images: ["sprite.png"]
       animations: animations
       frames: {width: 40, height: 40}
@@ -98,8 +126,6 @@ class TreasureWarUI
 $ ->
   ui = new TreasureWarUI
   ui.main()
-  players = {}
-  treasures = {}
 
   socket = io.connect("http://#{location.hostname}:8000")
   socket.on('map', (map) ->
@@ -109,13 +135,10 @@ $ ->
 
   socket.on('world state', (data) ->
     for treasure in data.items
-      # need to remove treasure that have been picked up
-      t = (treasures[treasure.clientId] ?= new Treasure(ui))
-      t.update(treasure)
+      ui.updateTreasure(treasure)
 
     for player in data.players
-      p = (players[player.clientId] ?= new Player(ui))
-      p.update(player)
+      ui.updatePlayer(player)
 
     $("#leaderboard").empty()
     asc_players = _(data.players).sortBy (p) -> p.score * -1
