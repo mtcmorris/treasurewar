@@ -59,7 +59,7 @@ io.sockets.on('connection', (socket) ->
 
   socket.on("set name", (player_name) ->
     # gtfo rufus
-    if player_name == "mipearson" || player_name == "zombie"
+    if player_name == "mipearson" || player_name == "zombie" || player_name.length > 16
       player_name = socket.handshake.address.address
 
     game.setName(socket.id, player_name) unless isVisualizer(socket)
