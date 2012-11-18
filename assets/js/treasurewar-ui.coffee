@@ -275,7 +275,8 @@ class Leaderboard
           @makePlayerEl(p).appendTo(list)
         else 
           nonScoring += 1
-        $("""<div class=name>#{nonScoring} other player(s)</div>""")
+      if nonScoring > 0
+        $("""<div class=name>#{nonScoring} other player(s)</div>""").appendTo(list)
 
   makePlayerEl: (player) ->
     $("""<div class='player avatar-#{@avatar(player)}'>
