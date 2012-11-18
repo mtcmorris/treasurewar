@@ -116,6 +116,7 @@ class TreasureWarUI
   TILE_WIDTH = 40
   TILE_HEIGHT = 40
   NUM_CLOUDS = 8
+  LEADERBOARD_WIDTH = 240
 
   constructor: (canvas) ->
     @players = {}
@@ -237,18 +238,20 @@ class TreasureWarUI
     @resizeCanvas()
 
   resizeCanvas: ->
+
+    windowWidth = window.innerWidth - LEADERBOARD_WIDTH
     scale =
-      x: window.innerWidth / @canvas.width()
+      x: windowWidth / @canvas.width()
       y: window.innerHeight / @canvas.height()
 
     position = 
-      x: (window.innerWidth - @canvas.width() * scale.y) / 2
+      x: (windowWidth - @canvas.width() * scale.y) / 2 + LEADERBOARD_WIDTH
       y: (window.innerHeight - @canvas.height() * scale.x) / 2
 
     if scale.x < scale.y
       scale = scale.x + ', ' + scale.x
       @canvas.css("top", position.y)
-      @canvas.css("left", 0) 
+      @canvas.css("left", LEADERBOARD_WIDTH) 
     else
       scale = scale.y + ', ' + scale.y
       @canvas.css("left", position.x)
