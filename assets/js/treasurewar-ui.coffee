@@ -113,12 +113,8 @@ class Treasure
 
 
 class TreasureWarUI
-  MAP_WIDTH = 40
-  MAP_HEIGHT = 30
   TILE_WIDTH = 40
   TILE_HEIGHT = 40
-  CANVAS_WIDTH = MAP_WIDTH * TILE_WIDTH
-  CANVAS_HEIGHT = MAP_HEIGHT * TILE_HEIGHT
 
   constructor: (canvas) ->
     @players = {}
@@ -126,6 +122,9 @@ class TreasureWarUI
     @stashes = {}
     @mapContainer = new createjs.Container
     @canvas = canvas
+    @mapDimensions =
+      x: 0
+      y: 0
 
   renderMap: () ->
     return unless @map && @spritesReady
@@ -134,11 +133,16 @@ class TreasureWarUI
       for cursorX in [0..(@map[cursorY].length - 1)]
         char = @map[cursorY][cursorX]
         continue if char == ' '
+
+        if cursorX >= @mapDimensions.x
+          @mapDimensions.x = cursorX + 1
+        if cursorY >= @mapDimensions.y
+          @mapDimensions.y = cursorY + 1
+      
         tile = new Tile char
         @mapContainer.addChild tile.root
         tile.draw cursorX, cursorY
 
-    @mapContainer.cache 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, 1
     @stage.addChild @mapContainer
 
   renderClouds: () ->
@@ -180,18 +184,21 @@ class TreasureWarUI
     s.update(data)
 
   tick: ->
-    if spriteSheet?.complete && !@spritesReady
+    if spriteSheet?.complete && @map && !@spritesReady
       # createjs.Ticker.removeListener @
-      @canvas[0].width = MAP_WIDTH * TILE_WIDTH
-      @canvas[0].height = MAP_HEIGHT * TILE_HEIGHT 
+      @spritesReady = true
+      @renderMap()
+      @canvas[0].width = @mapDimensions.x * TILE_WIDTH
+      @canvas[0].height = @mapDimensions.y * TILE_HEIGHT 
+      console.log @mapDimensions
+      @mapContainer.cache 0, 0, @canvas.width(), @canvas.height(), 1
+
       $(window).on 'resize', =>
         @resizeCanvas()
         false
       @resizeCanvas()
-      @spritesReady = true
-      @renderMap()
 
-    if @cloud.image.complete && clouds.length == 0
+    if @map && @cloud.image.complete && clouds.length == 0
       for i in [0..4]
         newCloud =  @cloud.clone()
         @resetCloud(newCloud)
@@ -231,12 +238,12 @@ class TreasureWarUI
 
   resizeCanvas: ->
     scale =
-      x: (window.innerWidth - 10) / @canvas.width()
-      y: (window.innerHeight - 10) / @canvas.height()
+      x: window.innerWidth / @canvas.width()
+      y: window.innerHeight / @canvas.height()
 
     position = 
-      x: ((window.innerWidth - 10) - (@canvas.width() * scale.y)) / 2
-      y: ((window.innerHeight - 10) - (@canvas.height() * scale.x)) / 2
+      x: (window.innerWidth - @canvas.width() * scale.y) / 2
+      y: (window.innerHeight - @canvas.height() * scale.x) / 2
 
     console.log position
     console.log window.innerWidth, @canvas.width(), scale.y
