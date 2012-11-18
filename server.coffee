@@ -59,13 +59,13 @@ io.sockets.on('connection', (socket) ->
   ip_address = socket.handshake.address.address
   console.log "Spawning player for #{socket.id} #{ip_address}"
 
-  game.spawnPlayer(socket.id)
-
   matching_addresses = _(io.sockets.clients()).filter (a) => (a.handshake.address.address == ip_address)
   if matching_addresses.length > MAX_CONNECTIONS_PER_HOST
     console.log "Kicking #{ip_address} for too many connections"
     socket.disconnect()
     return
+
+  game.spawnPlayer(socket.id)
 
   socket.on("set name", (player_name) ->
     # gtfo rufus
