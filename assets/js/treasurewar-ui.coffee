@@ -132,13 +132,14 @@ class TreasureWarUI
 
   renderClouds: () ->
     for idx in [0..clouds.length - 1]
-      clouds[idx].x += idx / 2 + 3
+      clouds[idx].x += (idx + 1) / 2
 
       if clouds[idx].x > 1600
-        clouds[idx].x = -clouds[idx].image.width
+        clouds[idx].x = -clouds[idx].image.width * 2
         clouds[idx].y = (Math.random() * 1000)
-        clouds[idx].alpha = Math.random() * 0.5 + 0.25
-        clouds[idx].scaleX = Math.random() * 0.4 + 0.8
+        clouds[idx].alpha = Math.random() * 0.5 + 0.40
+        clouds[idx].scaleX = Math.random() * 0.8 + 1.6
+        clouds[idx].scaleY = 2
 
       @stage.addChildAt clouds[idx], 0
 
@@ -168,12 +169,14 @@ class TreasureWarUI
       @renderMap()
 
     if @cloud.image.complete && clouds.length == 0
-      for i in [0..8]
+      for i in [0..4]
         newCloud =  @cloud.clone()
         newCloud.y = Math.floor(Math.random() * 1000)
-        newCloud.x = Math.floor(Math.random() * 1200)
-        newCloud.alpha = Math.random() * 0.5 + 0.25
-        newCloud.scaleX = Math.random() * 0.4 + 0.8
+        newCloud.x = Math.floor(Math.random() * 1600) - 400
+        newCloud.alpha = Math.random() * 0.5 + 0.4
+        newCloud.scaleX = Math.random() * 0.8 + 1.6
+        newCloud.scaleY = 2
+
         clouds.push newCloud
 
     @renderClouds()
