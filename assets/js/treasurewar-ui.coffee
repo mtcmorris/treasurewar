@@ -37,6 +37,9 @@ for char, data of tileTypes
 spriteSheet = null
 clouds = []
 
+TILE_WIDTH = 40
+TILE_HEIGHT = 40
+
 class Tile
   constructor: (char) ->
     @root = @tile = new createjs.BitmapAnimation(spriteSheet)
@@ -57,7 +60,6 @@ class Player
 
     @tile = new Tile('p')
     @cnt.addChild @tile.root
-
 
     @baseIndex = @tile.index
 
@@ -91,15 +93,27 @@ class Player
 
     @name.text = data.name
 
-
 class Stash
 
   constructor: (@player) ->
+    @root = @cnt = new createjs.Container
+
     @tile = new Tile('p')
-    @root = @tile.root
+
+    @cnt.addChild @tile.root
+
+    @name = new createjs.Text "Fred's Stash", "bold 20px Arial", '#ff0'
+    @name.textAlign = 'center'
+    @name.textBaseline = 'bottom'
+    @name.x += 20
+    @cnt.addChild @name
 
   update: (data)->
-    @tile.draw(data.stash.x, data.stash.y, @player.baseIndex + 12)
+    @tile.root.gotoAndStop(@player.baseIndex + 12)
+
+    @cnt.x = data.stash.x * TILE_WIDTH
+    @cnt.y = data.stash.y * TILE_HEIGHT
+    @name.text =  @player.name.text + "'s Stash"
 
 
 class Treasure
@@ -113,8 +127,6 @@ class Treasure
 
 
 class TreasureWarUI
-  TILE_WIDTH = 40
-  TILE_HEIGHT = 40
   NUM_CLOUDS = 8
   LEADERBOARD_WIDTH = 240
 
@@ -144,7 +156,6 @@ class TreasureWarUI
         tile = new Tile char
         @mapContainer.addChild tile.root
         tile.draw cursorX, cursorY
-
 
     @mapContainer.updateCache() if @mapContainer.cacheCanvas
     @stage.addChild @mapContainer
