@@ -11,6 +11,7 @@ assets = require('connect-assets')
 #----------------------------------------
 # Config Settings
 SERVER_PORT = 8000
+MAX_CONNECTIONS_PER_HOST = 5
 #----------------------------------------
 
 server.listen(SERVER_PORT)
@@ -33,6 +34,7 @@ game.spawnDungeon(60, 45)
 sys.puts game.mapToString()
 
 visualizers = []
+connected_hosts = {}
 
 io = require('socket.io').listen(server)
 
@@ -54,13 +56,21 @@ isVisualizer = (socket) ->
   _(visualizers).contains socket.id
 
 io.sockets.on('connection', (socket) ->
-  console.log "Spawning player for #{socket.id}"
+  ip_address = socket.handshake.address.address
+  console.log "Spawning player for #{socket.id} #{ip_address}"
+
   game.spawnPlayer(socket.id)
+
+  matching_addresses = _(io.sockets.clients()).filter (a) => (a.handshake.address.address == ip_address)
+  if matching_addresses.length > MAX_CONNECTIONS_PER_HOST
+    console.log "Kicking #{ip_address} for too many connections"
+    socket.disconnect()
+    return
 
   socket.on("set name", (player_name) ->
     # gtfo rufus
-    if player_name == "mipearson" || player_name == "zombie" || player_name.length > 16
-      player_name = socket.handshake.address.address
+    if player_name == "zombie" || player_name.length > 16
+      player_name = ip_address
 
     game.setName(socket.id, player_name) unless isVisualizer(socket)
   )
