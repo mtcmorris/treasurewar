@@ -180,6 +180,10 @@ class TreasureWarUI
     @stage.addChild child.root
     child
 
+  removeChild: (child) ->
+    @stage.removeChild child.root
+    child
+
   resetCloud: (cloud) ->
     cloud.x = -cloud.image.width * 2
     cloud.y = Math.floor(Math.random() * @canvas.height()) - cloud.image.height
@@ -204,7 +208,10 @@ class TreasureWarUI
     for clientId, player of @players
       if clientId not in clientIds
         console.log "reaped #{clientId}"
+        @removeChild(@players[clientId])
+        @removeChild(@stashes[clientId])
         delete @players[clientId]
+        delete @stashes[clientId]
 
   tick: ->
     if spriteSheet?.complete && @map && !@spritesReady
@@ -334,7 +341,6 @@ $ ->
       updatedClientIds.push player.clientId
 
     ui.reapPlayersNotUpdated(updatedClientIds)
-
 
     leaderboard.update(data.players)
 
