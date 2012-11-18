@@ -144,11 +144,7 @@ class TreasureWarUI
       clouds[idx].x += (idx + 1) / 2
 
       if clouds[idx].x > 1600
-        clouds[idx].x = -clouds[idx].image.width * 2
-        clouds[idx].y = (Math.random() * 1000)
-        clouds[idx].alpha = Math.random() * 0.5 + 0.40
-        clouds[idx].scaleX = Math.random() * 0.8 + 1.6
-        clouds[idx].scaleY = 2
+        @resetCloud(clouds[idx])
 
       @stage.addChildAt clouds[idx], 1
 
@@ -157,6 +153,12 @@ class TreasureWarUI
     @stage.addChild child.root
     child
 
+  resetCloud: (cloud) ->
+    cloud.x = -clouds[idx].image.width * 2
+    cloud.y = Math.floor(Math.random() * @canvas.height()) - cloud.image.height
+    cloud.alpha = Math.random() * 0.5 + 0.4
+    cloud.scaleX = Math.random() * 0.8 + 1.6
+    cloud.scaleY = 2
 
   updateTreasure: (treasure) ->
     # need to remove treasure that have been picked up
@@ -186,12 +188,8 @@ class TreasureWarUI
     if @cloud.image.complete && clouds.length == 0
       for i in [0..4]
         newCloud =  @cloud.clone()
-        newCloud.y = Math.floor(Math.random() * @canvas.height()) - newCloud.image.height
-        newCloud.x = Math.floor(Math.random() * @canvas.width()) - newCloud.image.width
-        newCloud.alpha = Math.random() * 0.5 + 0.4
-        newCloud.scaleX = Math.random() * 0.8 + 1.6
-        newCloud.scaleY = 2
-
+        @resetCloud(newCloud)
+        newCloud.x = Math.floor(Math.random() * @canvas.width()) - cloud.image.width
         clouds.push newCloud
 
       skyBoxGradient = new createjs.Graphics
