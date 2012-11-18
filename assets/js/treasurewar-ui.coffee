@@ -267,19 +267,19 @@ class TreasureWarUI
 
   resizeCanvas: ->
 
-    windowWidth = window.innerWidth - LEADERBOARD_WIDTH
+    windowWidth = window.innerWidth
     scale =
       x: windowWidth / @canvas.width()
       y: window.innerHeight / @canvas.height()
 
     position = 
-      x: (windowWidth - @canvas.width() * scale.y) / 2 + LEADERBOARD_WIDTH
+      x: (windowWidth - @canvas.width() * scale.y) / 2
       y: (window.innerHeight - @canvas.height() * scale.x) / 2
 
     if scale.x < scale.y
       scale = scale.x + ', ' + scale.x
       @canvas.css("top", position.y)
-      @canvas.css("left", LEADERBOARD_WIDTH) 
+      @canvas.css("left", 0) 
     else
       scale = scale.y + ', ' + scale.y
       @canvas.css("left", position.x)
