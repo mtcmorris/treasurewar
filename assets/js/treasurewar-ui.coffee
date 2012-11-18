@@ -17,9 +17,6 @@ tileTypes =
   's':
     name: 'stash'
     frames: [54..56]
-  ' ':
-    name: 'other'
-    frames: [54..56]
 
 healthBar = [
   35
@@ -31,16 +28,14 @@ healthBar = [
 ]
 healthChunk = 100/healthBar.length
 
-
-
 animations = {}
-
 
 for char, data of tileTypes
   animations[char] = frames: data.frames
 
 # its a global, live with it
 spriteSheet = null
+clouds = []
 
 class Tile
   constructor: (char) ->
@@ -130,9 +125,22 @@ class TreasureWarUI
     for cursorY in [0..(@map.length - 1)]
       for cursorX in [0..(@map[cursorY].length - 1)]
         char = @map[cursorY][cursorX]
+        continue if char == ' '
         tile = new Tile char
         @stage.addChild tile.root
         tile.draw cursorX, cursorY
+
+  renderClouds: () ->
+    for idx in [0..clouds.length - 1]
+      clouds[idx].x += idx / 2 + 3
+
+      if clouds[idx].x > 1600
+        clouds[idx].x = -clouds[idx].image.width
+        clouds[idx].y = (Math.random() * 1000)
+        clouds[idx].alpha = Math.random() * 0.5 + 0.25
+        clouds[idx].scaleX = Math.random() * 0.4 + 0.8
+
+      @stage.addChildAt clouds[idx], 0
 
 
   addChild: (child) ->
@@ -154,10 +162,21 @@ class TreasureWarUI
     s.update(data)
 
   tick: ->
-    if spriteSheet?.complete
-      createjs.Ticker.removeListener @
+    if spriteSheet?.complete && !@spritesReady
+      # createjs.Ticker.removeListener @
       @spritesReady = true
       @renderMap()
+
+    if @cloud.image.complete && clouds.length == 0
+      for i in [0..8]
+        newCloud =  @cloud.clone()
+        newCloud.y = Math.floor(Math.random() * 1000)
+        newCloud.x = Math.floor(Math.random() * 1200)
+        newCloud.alpha = Math.random() * 0.5 + 0.25
+        newCloud.scaleX = Math.random() * 0.4 + 0.8
+        clouds.push newCloud
+
+    @renderClouds()
 
 
   main: ->
@@ -166,7 +185,10 @@ class TreasureWarUI
       animations: animations
       frames: {width: 40, height: 40}
 
+    @cloud = new createjs.Bitmap 'cloud.png'
+
     createjs.Ticker.addListener @
+    createjs.Ticker.setFPS(20);
 
     @stage = new createjs.Stage("TreasureWar")
     createjs.Ticker.addListener @stage
@@ -245,7 +267,6 @@ $ ->
           pewIndex = parseInt(Math.random() * 5) + 1
           window.clips["pew#{pewIndex}"].play()
         else if event == "kill"
-          # console.log "LOL"
           window.clips["bugle"].play()
   )
 
