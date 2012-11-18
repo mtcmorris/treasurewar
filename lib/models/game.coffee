@@ -248,10 +248,11 @@ root.Game = class Game
         current_y = pos.y + y
         tile = @map[current_y][current_x] if @map[current_y]
         if tile
+          # tile tpye will be 'W' for wall, 'f' for floor, and ' ' for null space which we ignore
           tile_type = switch tile
             when "W" then "wall"
             when "f" then "floor"
-          visibles.push {x: current_x, y: current_y, type: tile_type}
+          visibles.push {x: current_x, y: current_y, type: tile_type} if tile_type
 
     # add in players, stashes, items
     items = @findNear(find: 'items', pos: pos)
