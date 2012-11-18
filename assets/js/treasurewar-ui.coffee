@@ -117,11 +117,14 @@ class TreasureWarUI
   MAP_HEIGHT = 30
   TILE_WIDTH = 40
   TILE_HEIGHT = 40
+  CANVAS_WIDTH = MAP_WIDTH * TILE_WIDTH
+  CANVAS_HEIGHT = MAP_HEIGHT * TILE_HEIGHT
 
   constructor: (canvas) ->
     @players = {}
     @treasures = {}
     @stashes = {}
+    @mapContainer = new createjs.Container
     @canvas = canvas
 
   renderMap: () ->
@@ -132,8 +135,11 @@ class TreasureWarUI
         char = @map[cursorY][cursorX]
         continue if char == ' '
         tile = new Tile char
-        @stage.addChild tile.root
+        @mapContainer.addChild tile.root
         tile.draw cursorX, cursorY
+
+    @mapContainer.cache 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, 1
+    @stage.addChild @mapContainer
 
   renderClouds: () ->
     return unless clouds.length > 0
@@ -154,7 +160,7 @@ class TreasureWarUI
     child
 
   resetCloud: (cloud) ->
-    cloud.x = -clouds[idx].image.width * 2
+    cloud.x = -cloud.image.width * 2
     cloud.y = Math.floor(Math.random() * @canvas.height()) - cloud.image.height
     cloud.alpha = Math.random() * 0.5 + 0.4
     cloud.scaleX = Math.random() * 0.8 + 1.6
@@ -175,7 +181,7 @@ class TreasureWarUI
 
   tick: ->
     if spriteSheet?.complete && !@spritesReady
-      createjs.Ticker.removeListener @
+      # createjs.Ticker.removeListener @
       @canvas[0].width = MAP_WIDTH * TILE_WIDTH
       @canvas[0].height = MAP_HEIGHT * TILE_HEIGHT 
       $(window).on 'resize', =>
@@ -189,7 +195,7 @@ class TreasureWarUI
       for i in [0..4]
         newCloud =  @cloud.clone()
         @resetCloud(newCloud)
-        newCloud.x = Math.floor(Math.random() * @canvas.width()) - cloud.image.width
+        newCloud.x = Math.floor(Math.random() * @canvas.width()) - newCloud.image.width
         clouds.push newCloud
 
       skyBoxGradient = new createjs.Graphics
@@ -199,7 +205,7 @@ class TreasureWarUI
       @skyBox.y = 0
 
 
-    # @renderClouds()
+    @renderClouds()
 
 
   main: ->
