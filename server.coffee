@@ -29,7 +29,7 @@ app.get('/', (req, res) ->
 )
 
 game = new Game()
-game.spawnDungeon(68, 45)
+game.spawnDungeon(65, 45)
 sys.puts game.mapToString()
 
 visualizers = []
