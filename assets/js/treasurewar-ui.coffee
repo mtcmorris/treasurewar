@@ -115,6 +115,7 @@ class Treasure
 class TreasureWarUI
   TILE_WIDTH = 40
   TILE_HEIGHT = 40
+  NUM_CLOUDS = 8
 
   constructor: (canvas) ->
     @players = {}
@@ -190,7 +191,6 @@ class TreasureWarUI
       @renderMap()
       @canvas[0].width = @mapDimensions.x * TILE_WIDTH
       @canvas[0].height = @mapDimensions.y * TILE_HEIGHT 
-      console.log @mapDimensions
       @mapContainer.cache 0, 0, @canvas.width(), @canvas.height(), 1
 
       $(window).on 'resize', =>
@@ -199,14 +199,14 @@ class TreasureWarUI
       @resizeCanvas()
 
     if @map && @cloud.image.complete && clouds.length == 0
-      for i in [0..4]
+      for i in [1..NUM_CLOUDS]
         newCloud =  @cloud.clone()
         @resetCloud(newCloud)
         newCloud.x = Math.floor(Math.random() * @canvas.width()) - newCloud.image.width
         clouds.push newCloud
 
       skyBoxGradient = new createjs.Graphics
-      skyBoxGradient.beginLinearGradientFill(["#008","#88F"], [0.7, 1], 0, 0, 0, @canvas.height()).drawRect(0, 0, @canvas.width(), @canvas.height())
+      skyBoxGradient.beginLinearGradientFill(["#046","#68C"], [0.7, 1], 0, 0, 0, @canvas.height()).drawRect(0, 0, @canvas.width(), @canvas.height())
       @skyBox = new createjs.Shape(skyBoxGradient)
       @skyBox.x = 0
       @skyBox.y = 0
@@ -245,8 +245,6 @@ class TreasureWarUI
       x: (window.innerWidth - @canvas.width() * scale.y) / 2
       y: (window.innerHeight - @canvas.height() * scale.x) / 2
 
-    console.log position
-    console.log window.innerWidth, @canvas.width(), scale.y
     if scale.x < scale.y
       scale = scale.x + ', ' + scale.x
       @canvas.css("top", position.y)
