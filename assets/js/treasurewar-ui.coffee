@@ -4,7 +4,7 @@ tileTypes =
     frames: [42..44]
   'f':
     name: 'floors'
-    frames: [48..50]
+    frames: [48]
   'p':
     name: 'players'
     frames: [0..5]
