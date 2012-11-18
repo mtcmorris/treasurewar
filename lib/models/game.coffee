@@ -27,6 +27,7 @@ root.Game = class Game
 
   spawnPlayer: (clientId) ->
     player = new Player(clientId, @getRandomFloorLocation())
+    player.last_update = +new Date
     @players.push player
 
   setName: (clientId, name) ->
@@ -139,9 +140,15 @@ root.Game = class Game
     @processDrops _.filter(orders, (order) -> order.command == "drop")
     @processMoves _.filter(orders, (order) -> order.command == "move")
     @respawnDeadPlayers()
+    @reapOldPlayers()
     @repopTreasure()
     @updateScores()
     @orders = {}
+
+  reapOldPlayers: ->
+    oldPlayers = _(@players).filter( (p) -> p.last_update < (+new Date - 10000) )
+    for player in oldPlayers
+      @disconnectPlayer player.clientId
 
   respawnDeadPlayers: ->
     deadPlayers = _(@players).filter( (p) -> p.health <= 0)
@@ -154,6 +161,7 @@ root.Game = class Game
     for order in moveOrders
       try
         return unless order.player?
+        order.player.last_update = +new Date
         if @validMove(order.player, order.dir)
           @movePlayer(order.player, order.dir)
           @messageClient(order.player, notice: "You moved #{order.dir}")

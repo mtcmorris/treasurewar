@@ -43,8 +43,10 @@ tickGame = ->
   for client in io.sockets.clients()
     if isVisualizer(client)
       client.emit 'world state', game.visualizerTickPayload()
-    else
+    else if game.findPlayer(client.id)
       client.emit 'tick', game.tickPayloadFor(client.id)
+    else
+      client.disconnect()
 
 setInterval tickGame, 100
 
