@@ -86,7 +86,7 @@ describe "Game", ->
 
     it "returns false if you'd move into a player", ->
       @player.setPosition(0, 0)
-      @player2 = new Player(2, @player.x, @player.y + 1)
+      @player2 = new Player(2, {x: @player.x, y: @player.y + 1})
       @game.players.push @player2
       # player2 is below player
       # so, player cannot move south

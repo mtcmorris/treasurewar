@@ -47,10 +47,9 @@ root.Game = class Game
     @map[position.y][position.x] == 'f'
 
   isOccupied: (position) -> 
-    @findPlayerByPosition(position)
+    @findPlayerByPosition(position)?
 
   registerOrder: (order) ->
-    console.log "Order received", order
     @orders[order.clientId] = order
 
   validMove: (player, direction) ->
