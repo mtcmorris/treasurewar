@@ -162,10 +162,10 @@ root.Game = class Game
     for order in moveOrders
       try
         return unless order.player?
-        order.player.last_update = +new Date
         if @validMove(order.player, order.dir)
           @movePlayer(order.player, order.dir)
           @messageClient(order.player, notice: "You moved #{order.dir}")
+          order.player.last_update = +new Date
         else
           @messageClient(order.player, error: "Invalid move dir: #{order.dir}")
       catch exception
