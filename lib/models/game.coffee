@@ -46,6 +46,9 @@ root.Game = class Game
   isFloor: (position) ->
     @map[position.y][position.x] == 'f'
 
+  isOccupied: (position) -> 
+    @findPlayerByPosition(position)
+
   registerOrder: (order) ->
     console.log "Order received", order
     @orders[order.clientId] = order
@@ -53,6 +56,7 @@ root.Game = class Game
   validMove: (player, direction) ->
     newPos = @translatePosition player.position(), direction
     @isFloor(newPos)
+    valid = @isFloor(newPos) and not @isOccupied(newPos)
 
   movePlayer: (player, direction) ->
     newPos = @translatePosition player.position(), direction

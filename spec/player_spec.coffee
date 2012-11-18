@@ -17,11 +17,11 @@ describe "Player", ->
           x: 3
           y: 4
           treasures: []
-          position: @player.stash.position #ghetto
+          position: @player.stash.position #ghetto fixme todo
+          setPosition: @player.stash.setPosition #ghetto fixme todo
         position:
           x: 3
           y: 4
-
       }
 
   describe "calcScore", ->
@@ -90,3 +90,9 @@ describe "Player", ->
         @player.item_in_hand = null
         @drop_result = @player.dropHeldItem()
         expect(@drop_result.dropped_item).toEqual null
+
+  describe "#isCarryingTreasure", ->
+    it 'returns true when player is carrying treasure', ->
+      treasure = new Treasure(1, 2)
+      @player.item_in_hand = treasure
+      expect(@player.isCarryingTreasure()).toEqual true

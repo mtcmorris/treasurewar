@@ -84,6 +84,14 @@ describe "Game", ->
     it "should return false if you'd move into a wall", ->
       expect(@game.validMove @player, "e").toBeFalsy()
 
+    it "returns false if you'd move into a player", ->
+      @player.setPosition(0, 0)
+      @player2 = new Player(2, @player.x, @player.y + 1)
+      @game.players.push @player2
+      # player2 is below player
+      # so, player cannot move south
+      expect(@game.validMove @player, "s").toBeFalsy()
+
     it "should return true if otherwise a valid move", ->
       expect(@game.validMove @player, "se").toBeTruthy()
 
@@ -126,7 +134,6 @@ describe "Game", ->
 
     it "returns all stashes visible", ->
       # TODO refactor stash to object with anonPAyload method, then implement this spec
-
 
   describe "processAttacks", ->
     beforeEach ->

@@ -35,6 +35,8 @@ The server "ticks" every second in which you may make a move.  When the server t
 *   Respawn any dead players at their stash
 *   Send tick results
 
+IMPORTANT: the tiles key in the json response is really what you want to look at, not the nearby_* keys
+
 On connect/tick:
 
 ```json
@@ -53,7 +55,8 @@ On connect/tick:
       y: int
     }
   }
-  tiles: [{x: 1, y: 1, type: "wall"}, {x: 2, y: 1, type: "wall"}]
+  tiles: [{x: 1, y: 1, type: "wall"}, {x: 2, y: 1, type: "wall"}, {x: 2, y: 3, type: "floor"}, {x: 2, y: 4, type: "player"}, {x: 2, y: 3, type: "treasure"}, {x: 2, y: 3, type: "stash"}, ]
+
   nearby_players: [
     {
       name: "@mtcmorris",
