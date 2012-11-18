@@ -269,8 +269,14 @@ class Leaderboard
     if asc_players.length == 0
       list.append """<div class='empty'>No players :(</div>"""
     else
+      nonScoring = 0
       for p in asc_players
-        @makePlayerEl(p).appendTo(list)
+        if p.score > 0
+          @makePlayerEl(p).appendTo(list)
+        else 
+          nonScoring += 1
+        $("""<div class=name>#{nonScoring} other player(s)</div>""")
+
   makePlayerEl: (player) ->
     $("""<div class='player avatar-#{@avatar(player)}'>
       <div class='name'>#{player.name}</div>
