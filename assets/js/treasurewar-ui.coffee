@@ -113,6 +113,11 @@ class Treasure
 
 
 class TreasureWarUI
+  MAP_WIDTH = 40
+  MAP_HEIGHT = 30
+  TILE_WIDTH = 40
+  TILE_HEIGHT = 40
+
   constructor: (canvas) ->
     @players = {}
     @treasures = {}
@@ -168,7 +173,13 @@ class TreasureWarUI
 
   tick: ->
     if spriteSheet?.complete && !@spritesReady
-      # createjs.Ticker.removeListener @
+      createjs.Ticker.removeListener @
+      @canvas[0].width = MAP_WIDTH * TILE_WIDTH
+      @canvas[0].height = MAP_HEIGHT * TILE_HEIGHT 
+      $(window).on 'resize', =>
+        @resizeCanvas()
+        false
+      @resizeCanvas()
       @spritesReady = true
       @renderMap()
 
@@ -190,7 +201,7 @@ class TreasureWarUI
       @skyBox.y = 0
 
 
-    @renderClouds()
+    # @renderClouds()
 
 
   main: ->
@@ -219,12 +230,20 @@ class TreasureWarUI
       x: (window.innerWidth - 10) / @canvas.width()
       y: (window.innerHeight - 10) / @canvas.height()
 
+    position = 
+      x: ((window.innerWidth - 10) - (@canvas.width() * scale.y)) / 2
+      y: ((window.innerHeight - 10) - (@canvas.height() * scale.x)) / 2
+
+    console.log position
+    console.log window.innerWidth, @canvas.width(), scale.y
     if scale.x < scale.y
       scale = scale.x + ', ' + scale.x
+      @canvas.css("top", position.y)
+      @canvas.css("left", 0) 
     else
       scale = scale.y + ', ' + scale.y
-
-    console.log scale
+      @canvas.css("left", position.x)
+      @canvas.css("top", 0) 
 
     @canvas.css("transform-origin", "left top")
     @canvas.css("transform", "scale(#{scale})")
@@ -257,7 +276,6 @@ class Leaderboard
 $ ->
   ui = new TreasureWarUI $('#TreasureWar')
   ui.main()
-  ui.fullscreenify()
   leaderboard = new Leaderboard($("#leaderboard"))
 
   socket = io.connect("http://#{location.hostname}:8000")
