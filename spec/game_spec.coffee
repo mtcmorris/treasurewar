@@ -52,13 +52,20 @@ describe "Game", ->
       it 'should move the player', ->
         expect(@moveSpy).toHaveBeenCalledWith(@order.player, 'n')
 
+      it 'should set last_update to current time', ->
+        expect(@player.last_update).toBeGreaterThan(+new Date - 1000)
+
     describe "with an invalid move", ->
       beforeEach ->
         spyOn(@game, 'validMove').andReturn(false)
+        @player.last_update = 500
         @game.processMoves([@order])
 
       it 'should not move the player', ->
         expect(@moveSpy).not.toHaveBeenCalled()
+
+      it 'should not update last_update', ->
+        expect(@player.last_update).toEqual(500)
 
     describe "errors", ->
       beforeEach ->
@@ -424,3 +431,23 @@ describe "Game", ->
       #in random locations
       expect(t1.position()).toNotEqual t2.position()
 
+  describe "reapOldPlayers", ->
+    it "disconnects players that have not moved in the last ten seconds", ->
+      p1 = new Player(1, {x: 3, y: 4})
+      p2 = new Player(2, {x: 1, y: 1})
+      @game.players = [p1, p2]
+
+      p1.last_update = +new Date
+      p2.last_update = (+new Date) - 20000
+
+      @game.reapOldPlayers()
+
+      expect(@game.players).not.toContain(p2)
+      expect(@game.players).toContain(p1)
+
+  describe "tick", ->
+    it "calls reapOldPlayers", ->
+      spy = spyOn(@game, 'reapOldPlayers')
+      @game.tick()
+
+      expect(spy).toHaveBeenCalled()
