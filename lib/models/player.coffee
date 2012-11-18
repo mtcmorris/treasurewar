@@ -66,6 +66,7 @@ root.Player = class Player
     position: @position()
 
   respawn: ->
+    @item_in_hand = null
     @health = 100
     @x = @stash.x
     @y = @stash.y

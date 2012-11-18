@@ -96,3 +96,21 @@ describe "Player", ->
       treasure = new Treasure(1, 2)
       @player.item_in_hand = treasure
       expect(@player.isCarryingTreasure()).toEqual true
+
+  describe "#respawn", ->
+    it 'restores the player health to 100', ->
+      @player.health = 0
+      @player.respawn()
+      expect(@player.health).toEqual 100
+
+    it 'sets the player back to their stash', ->
+      @player = new Player(1, x: 3, y: 4)
+      @player.setPosition(10,12)
+      @player.respawn()
+      expect(@player.position()).toEqual {x: 3, y: 4}
+
+    it 'removes whatever they were holding', ->
+      @player.item_in_hand = new Treasure({x: 1, y: 2})
+      @player.respawn()
+      expect(@player.item_in_hand).toBeNull
+
