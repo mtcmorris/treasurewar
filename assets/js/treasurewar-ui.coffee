@@ -145,6 +145,8 @@ class TreasureWarUI
         @mapContainer.addChild tile.root
         tile.draw cursorX, cursorY
 
+
+    @mapContainer.updateCache() if @mapContainer.cacheCanvas
     @stage.addChild @mapContainer
 
   renderClouds: () ->
