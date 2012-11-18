@@ -113,11 +113,11 @@ class Treasure
 
 
 class TreasureWarUI
-  constructor: ->
+  constructor: (canvas) ->
     @players = {}
     @treasures = {}
     @stashes = {}
-
+    @canvas = canvas
 
   renderMap: () ->
     return unless @map && @spritesReady
@@ -131,6 +131,10 @@ class TreasureWarUI
         tile.draw cursorX, cursorY
 
   renderClouds: () ->
+    return unless clouds.length > 0
+
+    @stage.addChildAt @skyBox, 0
+
     for idx in [0..clouds.length - 1]
       clouds[idx].x += (idx + 1) / 2
 
@@ -141,7 +145,7 @@ class TreasureWarUI
         clouds[idx].scaleX = Math.random() * 0.8 + 1.6
         clouds[idx].scaleY = 2
 
-      @stage.addChildAt clouds[idx], 0
+      @stage.addChildAt clouds[idx], 1
 
 
   addChild: (child) ->
@@ -171,13 +175,20 @@ class TreasureWarUI
     if @cloud.image.complete && clouds.length == 0
       for i in [0..4]
         newCloud =  @cloud.clone()
-        newCloud.y = Math.floor(Math.random() * 1000)
-        newCloud.x = Math.floor(Math.random() * 1600) - 400
+        newCloud.y = Math.floor(Math.random() * @canvas.height()) - newCloud.image.height
+        newCloud.x = Math.floor(Math.random() * @canvas.width()) - newCloud.image.width
         newCloud.alpha = Math.random() * 0.5 + 0.4
         newCloud.scaleX = Math.random() * 0.8 + 1.6
         newCloud.scaleY = 2
 
         clouds.push newCloud
+
+      skyBoxGradient = new createjs.Graphics
+      skyBoxGradient.beginLinearGradientFill(["#008","#88F"], [0.7, 1], 0, 0, 0, @canvas.height()).drawRect(0, 0, @canvas.width(), @canvas.height())
+      @skyBox = new createjs.Shape(skyBoxGradient)
+      @skyBox.x = 0
+      @skyBox.y = 0
+
 
     @renderClouds()
 
@@ -193,30 +204,30 @@ class TreasureWarUI
     createjs.Ticker.addListener @
     createjs.Ticker.setFPS(20);
 
-    @stage = new createjs.Stage("TreasureWar")
+    @stage = new createjs.Stage(@canvas[0])
     createjs.Ticker.addListener @stage
 
   fullscreenify: ->
-    canvas = $('#TreasureWar')
-
     $(window).on 'resize', =>
-      @resize(canvas)
+      @resizeCanvas()
       false
 
-    @resize(canvas)
+    @resizeCanvas()
 
-  resize: (canvas) ->
+  resizeCanvas: ->
     scale =
-      x: (window.innerWidth - 10) / canvas.width()
-      y: (window.innerHeight - 10) / canvas.height()
+      x: (window.innerWidth - 10) / @canvas.width()
+      y: (window.innerHeight - 10) / @canvas.height()
 
     if scale.x < scale.y
       scale = scale.x + ', ' + scale.x
     else
       scale = scale.y + ', ' + scale.y
 
-    canvas.css("transform-origin", "left top")
-    canvas.css("transform", "scale(#{scale})")
+    console.log scale
+
+    @canvas.css("transform-origin", "left top")
+    @canvas.css("transform", "scale(#{scale})")
 
 class Leaderboard
   constructor: (@el) ->
@@ -244,7 +255,7 @@ class Leaderboard
       0
 
 $ ->
-  ui = new TreasureWarUI
+  ui = new TreasureWarUI $('#TreasureWar')
   ui.main()
   ui.fullscreenify()
   leaderboard = new Leaderboard($("#leaderboard"))
