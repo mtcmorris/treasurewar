@@ -12,6 +12,7 @@ Inspired by [brains](https://github.com/chrislloyd/brains) - write a bot that fi
 6.   You can see two tiles in every direction.
 7.   You can can attack or move one tile per tick
 7.   You can make an action (attack/move/pick up treasure/drop treasure) at most once per 2 seconds. Last command wins and invalid moves will be discarded.
+8.   You can't move to a location where another player is standing.
 
 ## About
 
