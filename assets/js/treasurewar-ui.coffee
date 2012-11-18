@@ -52,6 +52,7 @@ class Tile
     @tile.x = x * 40
     @tile.y = y * 40
 
+    @age = 0
 
 class Player
 
@@ -92,6 +93,7 @@ class Player
     @bar.scaleY = 1.5
 
     @name.text = data.name
+    @age = 0
 
 class Stash
 
@@ -197,6 +199,12 @@ class TreasureWarUI
 
     s = @stashes[data.clientId] ||= @addChild(new Stash(p))
     s.update(data)
+
+  reapPlayersNotUpdated: (clientIds)->
+    for clientId, player of @players
+      if clientId not in clientIds
+        console.log "reaped #{clientId}"
+        delete @players[clientId]
 
   tick: ->
     if spriteSheet?.complete && @map && !@spritesReady
@@ -320,8 +328,13 @@ $ ->
     for treasure in data.items
       ui.updateTreasure(treasure)
 
+    updatedClientIds = []
     for player in data.players
       ui.updatePlayer(player)
+      updatedClientIds.push player.clientId
+
+    ui.reapPlayersNotUpdated(updatedClientIds)
+
 
     leaderboard.update(data.players)
 
