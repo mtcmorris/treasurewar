@@ -167,6 +167,18 @@ describe "Game", ->
       @game.processAttacks([@order])
       expect(@game.playerMessages[1]).toEqual [{notice: 'You attacked unnamed coward'}]
 
+    describe 'when a player holding an item dies', ->
+      it 'drops that item where the player was standing', ->
+        @attackee = new Player(2, x: 1, y: 0)
+        @attackee.health = 1
+        @treasure = new Treasure(@attackee.position())
+        @attackee.item_in_hand = @treasure
+        @game.players.push @attackee
+        expect(@game.items).not.toContain(@treasure)
+        @game.processAttacks([@order])
+        expect(@game.items).toContain(@treasure)
+        expect(@game.items[0].position()).toEqual @attackee.position()
+
   describe "processPickups", ->
     beforeEach ->
       @game.map = [

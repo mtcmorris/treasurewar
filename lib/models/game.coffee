@@ -80,6 +80,9 @@ root.Game = class Game
           @messageClient(attacked, notice: "You were attacked by #{attack.player.name}")
           if attacked.health <= 0
             attack.player.kills += 1
+            if item = attacked.item_in_hand
+              item.setPosition(attacked.x, attacked.y)
+              @items.push item
             @visualizerEvents.push "kill"
           else
             @visualizerEvents.push "attack"
@@ -151,7 +154,6 @@ root.Game = class Game
   reapOldPlayers: ->
     oldPlayers = _(@players).filter( (p) -> p.last_update < (+new Date - 10000) )
     for player in oldPlayers
-      console.log "Reaped player #{player.clientId}"
       @disconnectPlayer player.clientId
 
   respawnDeadPlayers: ->
