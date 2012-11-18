@@ -153,7 +153,7 @@ class TreasureWarUI
     for idx in [0..clouds.length - 1]
       clouds[idx].x += (idx + 1) / 2
 
-      if clouds[idx].x > 1600
+      if clouds[idx].x > @canvas.width()
         @resetCloud(clouds[idx])
 
       @stage.addChildAt clouds[idx], 1
