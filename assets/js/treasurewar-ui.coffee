@@ -4,7 +4,7 @@ tileTypes =
     frames: [42..44]
   'f':
     name: 'floors'
-    frames: [48..50]
+    frames: [48]
   'p':
     name: 'players'
     frames: [0..5]
@@ -344,21 +344,21 @@ $ ->
 
     leaderboard.update(data.players)
 
-    # if data.events
-    #   for event in data.events
-    #     if event == "attack"
-    #       pewIndex = parseInt(Math.random() * 5) + 1
-    #       window.clips["pew#{pewIndex}"].play()
-    #     else if event == "kill"
-    #       window.clips["bugle"].play()
+    if data.events
+      for event in data.events
+        if event == "attack"
+          pewIndex = parseInt(Math.random() * 5) + 1
+          window.clips["pew#{pewIndex}"].play()
+        else if event == "kill"
+          window.clips["bugle"].play()
   )
 
   socket.on('connect', ->
     socket.emit("visualizer", {})
   )
 
-  # audioClips = ["pew1", "pew2", "pew3", "pew4", "pew5", "bugle"]
-  # window.clips = {}
+  audioClips = ["pew1", "pew2", "pew3", "pew4", "pew5", "bugle"]
+  window.clips = {}
 
-  # for clip in audioClips
-  #   window.clips[clip] = new buzz.sound("/sounds/#{clip}", formats: ["mp3"])
+  for clip in audioClips
+    window.clips[clip] = new buzz.sound("/sounds/#{clip}", formats: ["mp3"])
