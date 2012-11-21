@@ -31,6 +31,8 @@ root.Game = class Game
     @players.push player
 
   setName: (clientId, name) ->
+    if name.length > 16
+      name = name[0..15]
     @findPlayer(clientId).name = name
 
   disconnectPlayer: (clientId) ->

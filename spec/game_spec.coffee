@@ -345,6 +345,11 @@ describe "Game", ->
       expect(@game.players[0].name).toBe "doug"
       expect(@game.findPlayer(1).name).toBe "doug"
 
+    it "should truncate the name if it is longer than 16 characters", ->
+      @game.setName(1, '12345678901234567890')
+      expect(@game.players[0].name).toBe "1234567890123456"
+      expect(@game.findPlayer(1).name).toBe "1234567890123456"
+
   describe "findNearbyPlayers", ->
     beforeEach ->
       @player = new Player(1, x: 1, y: 1)
