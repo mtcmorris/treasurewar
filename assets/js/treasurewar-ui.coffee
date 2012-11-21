@@ -207,7 +207,6 @@ class TreasureWarUI
   reapPlayersNotUpdated: (clientIds)->
     for clientId, player of @players
       if clientId not in clientIds
-        console.log "reaped #{clientId}"
         @removeChild(@players[clientId])
         @removeChild(@stashes[clientId])
         delete @players[clientId]

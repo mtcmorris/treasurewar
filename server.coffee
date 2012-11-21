@@ -68,10 +68,6 @@ io.sockets.on('connection', (socket) ->
   game.spawnPlayer(socket.id)
 
   socket.on("set name", (player_name) ->
-    # gtfo rufus
-    if player_name == "zombie" || player_name.length > 16
-      player_name = ip_address
-
     game.setName(socket.id, player_name) unless isVisualizer(socket)
   )
 
