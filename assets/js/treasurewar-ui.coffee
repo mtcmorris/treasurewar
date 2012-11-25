@@ -28,14 +28,16 @@ healthBar = [
 ]
 healthChunk = 100/healthBar.length
 
+# TODO: Remove globals
+
 animations = {}
 
 for char, data of tileTypes
   animations[char] = frames: data.frames
 
-# its a global, live with it
 spriteSheet = null
 clouds = []
+ui = null
 
 TILE_WIDTH = 40
 TILE_HEIGHT = 40
@@ -49,10 +51,10 @@ class Tile
 
   draw: (x, y, index) ->
     @tile.gotoAndStop(index || @index)
-    @tile.x = x * 40
-    @tile.y = y * 40
-
-    @age = 0
+    @tile.x = x * TILE_WIDTH * ui.scale + ui.position.x
+    @tile.y = y * TILE_HEIGHT * ui.scale + ui.position.y
+    @tile.scaleX = ui.scale
+    @tile.scaleY = ui.scale
 
 class Player
 
@@ -82,9 +84,11 @@ class Player
     if data.carry_treasure
       index += 6
 
-    @tile.root.gotoAndStop(index || @index)
-    @cnt.x = data.x * 40
-    @cnt.y = data.y * 40
+    @tile.root.gotoAndStop(index)
+    @cnt.x = data.x * TILE_WIDTH * ui.scale + ui.position.x
+    @cnt.y = data.y * TILE_HEIGHT * ui.scale + ui.position.y
+    @cnt.scaleX = ui.scale
+    @cnt.scaleY = ui.scale
 
     data.health = 100
 
@@ -112,9 +116,10 @@ class Stash
 
   update: (data)->
     @tile.root.gotoAndStop(@player.baseIndex + 12)
-
-    @cnt.x = data.stash.x * TILE_WIDTH
-    @cnt.y = data.stash.y * TILE_HEIGHT
+    @cnt.x = data.stash.x * TILE_WIDTH * ui.scale + ui.position.x
+    @cnt.y = data.stash.y * TILE_HEIGHT * ui.scale + ui.position.y
+    @cnt.scaleX = ui.scale
+    @cnt.scaleY = ui.scale
     @name.text =  @player.name.text + "'s Stash"
 
 
@@ -136,14 +141,15 @@ class TreasureWarUI
     @players = {}
     @treasures = {}
     @stashes = {}
-    @mapContainer = new createjs.Container
+    @unscaledSize =
+    @mapContainer =
     @canvas = canvas
     @mapDimensions =
       x: 0
       y: 0
 
   renderMap: () ->
-    return unless @map && @spritesReady
+    return unless @map && spriteSheet?.complete
 
     for cursorY in [0..(@map.length - 1)]
       for cursorX in [0..(@map[cursorY].length - 1)]
@@ -154,12 +160,25 @@ class TreasureWarUI
           @mapDimensions.x = cursorX + 1
         if cursorY >= @mapDimensions.y
           @mapDimensions.y = cursorY + 1
-      
-        tile = new Tile char
-        @mapContainer.addChild tile.root
-        tile.draw cursorX, cursorY
 
-    @mapContainer.updateCache() if @mapContainer.cacheCanvas
+    console.log @mapDimensions
+
+    @unscaledSize.x = @mapDimensions.x * TILE_WIDTH
+    @unscaledSize.y = @mapDimensions.y * TILE_HEIGHT
+    @calculateScale()
+    @stage.removeChild @mapContainer if @mapContainer
+    @mapContainer = new createjs.Container
+
+    for cursorY in [0..(@map.length - 1)]
+      for cursorX in [0..(@map[cursorY].length - 1)]
+        char = @map[cursorY][cursorX]
+        continue if char == ' '
+
+        tile = new Tile char
+        tile.draw cursorX, cursorY
+        @mapContainer.addChild tile.root
+
+    @mapContainer.cache 0, 0, @canvas.width(), @canvas.height(), 1
     @stage.addChild @mapContainer
 
   renderClouds: () ->
@@ -168,7 +187,7 @@ class TreasureWarUI
     @stage.addChildAt @skyBox, 0
 
     for idx in [0..clouds.length - 1]
-      clouds[idx].x += (idx + 1) / 2
+      clouds[idx].x += (idx + 1 ) / 3 + 1
 
       if clouds[idx].x > @canvas.width()
         @resetCloud(clouds[idx])
@@ -188,8 +207,8 @@ class TreasureWarUI
     cloud.x = -cloud.image.width * 2
     cloud.y = Math.floor(Math.random() * @canvas.height()) - cloud.image.height
     cloud.alpha = Math.random() * 0.5 + 0.4
-    cloud.scaleX = Math.random() * 0.8 + 1.6
-    cloud.scaleY = 2
+    cloud.scaleX = Math.random() * 0.4 + 0.8
+    cloud.scaleY = 1
 
   updateTreasure: (treasure) ->
     # need to remove treasure that have been picked up
@@ -213,33 +232,6 @@ class TreasureWarUI
         delete @stashes[clientId]
 
   tick: ->
-    if spriteSheet?.complete && @map && !@spritesReady
-      # createjs.Ticker.removeListener @
-      @spritesReady = true
-      @renderMap()
-      @canvas[0].width = @mapDimensions.x * TILE_WIDTH
-      @canvas[0].height = @mapDimensions.y * TILE_HEIGHT 
-      @mapContainer.cache 0, 0, @canvas.width(), @canvas.height(), 1
-
-      $(window).on 'resize', =>
-        @resizeCanvas()
-        false
-      @resizeCanvas()
-
-    if @map && @cloud.image.complete && clouds.length == 0
-      for i in [1..NUM_CLOUDS]
-        newCloud =  @cloud.clone()
-        @resetCloud(newCloud)
-        newCloud.x = Math.floor(Math.random() * @canvas.width()) - newCloud.image.width
-        clouds.push newCloud
-
-      skyBoxGradient = new createjs.Graphics
-      skyBoxGradient.beginLinearGradientFill(["#046","#68C"], [0.7, 1], 0, 0, 0, @canvas.height()).drawRect(0, 0, @canvas.width(), @canvas.height())
-      @skyBox = new createjs.Shape(skyBoxGradient)
-      @skyBox.x = 0
-      @skyBox.y = 0
-
-
     @renderClouds()
 
 
@@ -248,14 +240,22 @@ class TreasureWarUI
       images: ["sprite.png"]
       animations: animations
       frames: {width: 40, height: 40}
-
     @cloud = new createjs.Bitmap 'cloud.png'
 
-    createjs.Ticker.addListener @
-    createjs.Ticker.setFPS(20);
-
+    @fullscreenify()
     @stage = new createjs.Stage(@canvas[0])
+    @initializeClouds()
+    @redraw()
+    createjs.Ticker.setFPS 20
     createjs.Ticker.addListener @stage
+    createjs.Ticker.addListener @
+
+  initializeClouds: ->
+    for i in [1..NUM_CLOUDS]
+      newCloud =  @cloud.clone()
+      @resetCloud(newCloud)
+      newCloud.x = Math.floor(Math.random() * @canvas.width() * 0.6) - newCloud.image.width
+      clouds.push newCloud
 
   fullscreenify: ->
     $(window).on 'resize', =>
@@ -264,28 +264,46 @@ class TreasureWarUI
 
     @resizeCanvas()
 
+  renderSkyBox: ->
+    skyBoxGradient = new createjs.Graphics
+    skyBoxGradient.beginLinearGradientFill(["#046","#68C"], [0.7, 1], 0, 0, 0, @canvas.height()).drawRect(0, 0, @canvas.width(), @canvas.height())
+    @skyBox = new createjs.Shape(skyBoxGradient)
+    @skyBox.x = 0
+    @skyBox.y = 0
+    @stage.addChildAt @skyBox, 0
+
+  redraw: ->
+    return unless @stage
+    @stage.removeAllChildren()
+    @renderMap()
+    @renderSkyBox()
+    @renderClouds()
+    for clientId, player of @players
+      @addChild(player)
+    for clientId, stash of @stashes
+      @addChild(stash)
+
   resizeCanvas: ->
+    # Using .css() here merely stretches the canvas, it doesn't resize it.
+    @canvas[0].width = window.innerWidth
+    @canvas[0].height = window.innerHeight
+    @redraw()
 
-    windowWidth = window.innerWidth
+  calculateScale: ->  
     scale =
-      x: windowWidth / @canvas.width()
-      y: window.innerHeight / @canvas.height()
+      x: @canvas.width() / @unscaledSize.x
+      y: @canvas.height() / @unscaledSize.y
 
-    position = 
-      x: (windowWidth - @canvas.width() * scale.y) / 2
-      y: (window.innerHeight - @canvas.height() * scale.x) / 2
+    @position = 
+      x: Math.floor((@canvas.width() - @unscaledSize.x * scale.y) / 2)
+      y: Math.floor((@canvas.height() - @unscaledSize.y * scale.x) / 2)
 
     if scale.x < scale.y
-      scale = scale.x + ', ' + scale.x
-      @canvas.css("top", position.y)
-      @canvas.css("left", 0) 
+      @scale = scale.x
+      @position.x = 0
     else
-      scale = scale.y + ', ' + scale.y
-      @canvas.css("left", position.x)
-      @canvas.css("top", 0) 
-
-    @canvas.css("transform-origin", "left top")
-    @canvas.css("transform", "scale(#{scale})")
+      @scale = scale.y
+      @position.y = 0
 
 class Leaderboard
   constructor: (@el) ->
@@ -320,13 +338,20 @@ class Leaderboard
       0
 
 $ ->
+  console.log('herp')
   ui = new TreasureWarUI $('#TreasureWar')
   ui.main()
   leaderboard = new Leaderboard($("#leaderboard"))
 
-  socket = io.connect("http://#{location.hostname}:8000")
+  socket = io.connect("http://#{location.hostname}:#{location.port}")
+
+  socket.on('connect', ->
+    socket.emit("visualizer", {})
+  )
+
   socket.on('map', (map) ->
     ui.map = map
+    console.log('map');
     ui.renderMap()
   )
 
@@ -343,21 +368,18 @@ $ ->
 
     leaderboard.update(data.players)
 
-    if data.events
-      for event in data.events
-        if event == "attack"
-          pewIndex = parseInt(Math.random() * 5) + 1
-          window.clips["pew#{pewIndex}"].play()
-        else if event == "kill"
-          window.clips["bugle"].play()
+    # if data.events
+    #   for event in data.events
+    #     if event == "attack"
+    #       pewIndex = parseInt(Math.random() * 5) + 1
+    #       window.clips["pew#{pewIndex}"].play()
+    #     else if event == "kill"
+    #       window.clips["bugle"].play()
   )
 
-  socket.on('connect', ->
-    socket.emit("visualizer", {})
-  )
 
-  audioClips = ["pew1", "pew2", "pew3", "pew4", "pew5", "bugle"]
-  window.clips = {}
+  # audioClips = ["pew1", "pew2", "pew3", "pew4", "pew5", "bugle"]
+  # window.clips = {}
 
-  for clip in audioClips
-    window.clips[clip] = new buzz.sound("/sounds/#{clip}", formats: ["mp3"])
+  # for clip in audioClips
+  #   window.clips[clip] = new buzz.sound("/sounds/#{clip}", formats: ["mp3"])
