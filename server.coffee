@@ -11,6 +11,7 @@ assets = require('connect-assets')
 #----------------------------------------
 # Config Settings
 DEFAULT_SERVER_PORT = 8000
+DEFAULT_GAME_WIDTH = 60
 MAX_CONNECTIONS_PER_HOST = 5
 #----------------------------------------
 
@@ -30,7 +31,9 @@ app.get('/', (req, res) ->
 )
 
 game = new Game()
-game.spawnDungeon(60, 45)
+game_width = process.argv[3] || DEFAULT_GAME_WIDTH
+game_height = Math.floor(game_width * 3 / 4)
+game.spawnDungeon(game_width, game_height)
 sys.puts game.mapToString()
 
 visualizers = []
