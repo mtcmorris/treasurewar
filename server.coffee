@@ -10,11 +10,11 @@ assets = require('connect-assets')
 
 #----------------------------------------
 # Config Settings
-SERVER_PORT = 8000
+DEFAULT_SERVER_PORT = 8000
 MAX_CONNECTIONS_PER_HOST = 5
 #----------------------------------------
 
-server.listen(SERVER_PORT)
+server.listen(process.argv[2] || DEFAULT_SERVER_PORT)
 
 app.configure( ->
   app.set("view options", { layout: false, pretty: true })
