@@ -13,6 +13,7 @@ assets = require('connect-assets')
 DEFAULT_SERVER_PORT = 8000
 DEFAULT_GAME_WIDTH = 60
 MAX_CONNECTIONS_PER_HOST = 5
+TICKS_PER_SECOND = 5
 #----------------------------------------
 
 server.listen(process.argv[2] || DEFAULT_SERVER_PORT)
@@ -53,7 +54,7 @@ tickGame = ->
     else
       client.disconnect()
 
-setInterval tickGame, 100
+setInterval tickGame, Math.floor(1000 / TICKS_PER_SECOND)
 
 isVisualizer = (socket) ->
   _(visualizers).contains socket.id
